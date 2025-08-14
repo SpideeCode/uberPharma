@@ -3,64 +3,92 @@
 namespace App\Http\Controllers;
 
 use App\Models\Pharmacy;
-use App\Http\Requests\StorePharmacyRequest;
-use App\Http\Requests\UpdatePharmacyRequest;
+use App\Models\User;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Illuminate\Support\Facades\Auth;
 
 class PharmacyController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    // Liste toutes les pharmacies
     public function index()
     {
-        //
+        $pharmacies = Pharmacy::with('user')->get();
+
+        return Inertia::render('Pharmacies/Index', [
+            'pharmacies' => $pharmacies,
+            'auth' => Auth::user(),
+        ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
+    // Page création
     public function create()
     {
-        //
+        return Inertia::render('Pharmacies/Create');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StorePharmacyRequest $request)
+    // Enregistrement d'une nouvelle pharmacie
+    public function store(Request $request)
     {
-        //
+        $data = $request->validate([
+            'name' => 'required|string|max:255',
+            'address' => 'required|string|max:255',
+            'phone' => 'nullable|string|max:50',
+            'status' => 'required|in:open,closed',
+        ]);
+
+        Pharmacy::create([
+            'user_id' => Auth::id(),
+            'name' => $data['name'],
+            'address' => $data['address'],
+            'phone' => $data['phone'] ?? null,
+            'status' => $data['status'],
+        ]);
+
+        return redirect()->route('pharmacies.index')->with('success', 'Pharmacie créée avec succès.');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Pharmacy $pharmacy)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
+    // Page édition
     public function edit(Pharmacy $pharmacy)
     {
-        //
+        // Vérifie si l'utilisateur connecté est le propriétaire
+        if ($pharmacy->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized');
+        }
+
+        return Inertia::render('Pharmacies/Edit', [
+            'pharmacy' => $pharmacy,
+        ]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdatePharmacyRequest $request, Pharmacy $pharmacy)
+    // Mise à jour
+    public function update(Request $request, Pharmacy $pharmacy)
     {
-        //
+        if ($pharmacy->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized');
+        }
+
+        $data = $request->validate([
+            'name' => 'required|string|max:255',
+            'address' => 'required|string|max:255',
+            'phone' => 'nullable|string|max:50',
+            'status' => 'required|in:open,closed',
+        ]);
+
+        $pharmacy->update($data);
+
+        return redirect()->route('pharmacies.index')->with('success', 'Pharmacie mise à jour.');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+    // Suppression
     public function destroy(Pharmacy $pharmacy)
     {
-        //
+        if ($pharmacy->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized');
+        }
+
+        $pharmacy->delete();
+
+        return redirect()->route('pharmacies.index')->with('success', 'Pharmacie supprimée.');
     }
 }
