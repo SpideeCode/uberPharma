@@ -6,11 +6,16 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PharmacyController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ReviewController;
+use App\Models\Pharmacy;
+use App\Models\Product;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
-    return Inertia::render('welcome');
+    return Inertia::render('Welcome', [
+        'pharmacies' => Pharmacy::all(),
+        'products' => Product::all(),
+    ]);
 })->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
