@@ -76,13 +76,13 @@ class PharmacyController extends Controller
         return redirect()->back()->with('success', 'Pharmacie supprimée.');
     }
 
-    public function myPharmacies()
-    {
-        $pharmacies = auth()->user()->pharmacies()->get();
+    // public function myPharmacies()
+    // {
+    //     $pharmacies = auth()->user()->pharmacies()->get();
 
-        return Inertia::render('Pharmacies/MyPharmacies', [
-            'pharmacies' => $pharmacies,
-            'auth' => auth()->user(),
-        ]);
-    }
+    //     return Inertia::render('Pharmacies/MyPharmacies', [
+    //         'pharmacies' => $pharmacies,
+    //         'auth' => auth()->user(),
+    //     ]);
+    // }
 }

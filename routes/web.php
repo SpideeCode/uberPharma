@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\PharmacyController;
 use App\Models\Pharmacy;
 use App\Models\Product;
@@ -53,6 +54,13 @@ Route::post('/orders', [\App\Http\Controllers\OrderController::class, 'store']);
 Route::post('/payments', [\App\Http\Controllers\PaymentController::class, 'store']);
 Route::post('/deliveries/update-location', [\App\Http\Controllers\DeliveryController::class, 'updateLocation']);
 Route::post('/reviews', [\App\Http\Controllers\ReviewController::class, 'store']);
+
+
+
+
+Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
+    ->name('logout')
+    ->middleware('auth');
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';

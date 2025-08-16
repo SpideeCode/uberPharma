@@ -1,5 +1,6 @@
 import { Head, Link, usePage } from "@inertiajs/react";
 import { type SharedData } from "@/types";
+import { router } from "@inertiajs/react";
 
 export default function welcome() {
   const { pharmacies, auth } = usePage<SharedData>().props;
@@ -35,13 +36,21 @@ export default function welcome() {
         </div>
         <nav className="flex gap-4">
           <Link
-          href={route('pharmacies.create')}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-        >
-          Ajouter une pharmacie
-        </Link>
+            href={route("pharmacies.create")}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+          >
+            Ajouter une pharmacie
+          </Link>
           {auth ? (
-            <span>Bonjour {auth.name}</span>
+            <div className="flex items-center gap-4">
+              <span>Bonjour {auth.name}</span>
+              <button
+                onClick={() => router.post(route("logout"))} // utilisez route('logout') pour générer l'URL Laravel
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+              >
+                Déconnexion
+              </button>
+            </div>
           ) : (
             <>
               <Link href="/login" className="hover:underline">
