@@ -10,6 +10,15 @@ class Pharmacy extends Model
     /** @use HasFactory<\Database\Factories\PharmacyFactory> */
     use HasFactory;
 
+    // Autoriser l'assignation de ces champs
+    protected $fillable = [
+        'name',
+        'address',
+        'phone',
+        'user_id',
+    ];
+
+
     /**
      * Chaque pharmacie appartient à un utilisateur
      */

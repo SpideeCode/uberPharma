@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\PharmacyController;
 use App\Models\Pharmacy;
 use App\Models\Product;
 use Illuminate\Support\Facades\Route;
@@ -18,6 +19,9 @@ Route::get('/', function () {
     ]);
 })->name('home');
 
+
+
+
 // Dashboard (auth)
 Route::middleware(['auth', 'verified'])->get('/dashboard', function () {
     return Inertia::render('Dashboard');
@@ -29,9 +33,18 @@ Route::get('/products/create', [\App\Http\Controllers\ProductController::class, 
 Route::post('/products', [\App\Http\Controllers\ProductController::class, 'store']);
 
 // Pharmacies
-Route::get('/pharmacies', [\App\Http\Controllers\PharmacyController::class, 'index']);
-Route::get('/pharmacies/create', [\App\Http\Controllers\PharmacyController::class, 'create']);
-Route::post('/pharmacies', [\App\Http\Controllers\PharmacyController::class, 'store']);
+
+Route::get('/pharmacies', [PharmacyController::class, 'index'])->name('pharmacies.index');
+Route::get('/pharmacies/create', [PharmacyController::class, 'create'])->name('pharmacies.create');
+Route::post('/pharmacies', [PharmacyController::class, 'store'])->name('pharmacies.store');
+Route::get('/pharmacies/{pharmacy}', [PharmacyController::class, 'show'])->name('pharmacies.show');
+Route::get('/pharmacies/{pharmacy}/edit', [PharmacyController::class, 'edit'])->name('pharmacies.edit');
+Route::put('/pharmacies/{pharmacy}', [PharmacyController::class, 'update'])->name('pharmacies.update');
+Route::delete('/pharmacies/{pharmacy}', [PharmacyController::class, 'destroy'])->name('pharmacies.destroy');
+
+// Optionnel : voir uniquement les pharmacies de l’utilisateur connecté
+Route::get('/mes-pharmacies', [PharmacyController::class, 'myPharmacies'])->name('pharmacies.my');
+
 
 // Commandes, Paiements, Livraisons, Avis
 Route::get('/orders', [\App\Http\Controllers\OrderController::class, 'index']);
