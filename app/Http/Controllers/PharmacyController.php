@@ -43,10 +43,15 @@ class PharmacyController extends Controller
 
     public function show(Pharmacy $pharmacy)
     {
+        $pharmacy->load('products'); // <- indispensable
+        $pharmacy->load('user'); // <- indispensable
+
+
         return Inertia::render('ShowPharmacy', [
-            'pharmacy' => $pharmacy->load('user')
+            'pharmacy' => $pharmacy,
         ]);
     }
+
 
     public function edit(Pharmacy $pharmacy)
     {

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\PharmacyController;
+use App\Http\Controllers\ProductController;
 use App\Models\Pharmacy;
 use App\Models\Product;
 use Illuminate\Support\Facades\Route;
@@ -29,9 +30,13 @@ Route::middleware(['auth', 'verified'])->get('/dashboard', function () {
 })->name('dashboard');
 
 // Produits
-Route::get('/products', [\App\Http\Controllers\ProductController::class, 'index']);
-Route::get('/products/create', [\App\Http\Controllers\ProductController::class, 'create']);
-Route::post('/products', [\App\Http\Controllers\ProductController::class, 'store']);
+
+Route::get('/pharmacies/{pharmacy}/products', [ProductController::class, 'index'])->name('products.index');
+Route::get('/products/create', [ProductController::class, 'create'])->name('products.create');
+Route::post('/products', [ProductController::class, 'store'])->name('products.store');
+Route::get('/products/{product}/edit', [ProductController::class, 'edit'])->name('products.edit');
+Route::put('/products/{product}', [ProductController::class, 'update'])->name('products.update');
+Route::delete('/products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
 
 // Pharmacies
 
@@ -62,5 +67,5 @@ Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
     ->name('logout')
     ->middleware('auth');
 
-require __DIR__.'/settings.php';
-require __DIR__.'/auth.php';
+require __DIR__ . '/settings.php';
+require __DIR__ . '/auth.php';
