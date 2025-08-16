@@ -16,7 +16,7 @@ export default function EditProduct({ pharmacy, product }: any) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    router.put(`/pharmacies/${pharmacy.id}/products/${product.id}`, form);
+    router.put(`/products/${product.id}`, form);
   };
 
   return (
