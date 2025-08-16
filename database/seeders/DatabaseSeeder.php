@@ -34,10 +34,10 @@ class DatabaseSeeder extends Seeder
         $categories = ProductCategory::factory(5)->create();
 
         // 5️⃣ Créer 10 produits pour chaque pharmacie, avec catégorie aléatoire
-        $pharmacies->each(function ($pharmacy) use ($categories) {
+        $pharmacies->each(function ($pharmacy)  {
             Product::factory(10)->create([
                 'pharmacy_id' => $pharmacy->id,
-                'category_id' => $categories->random()->id,
+                
             ]);
         });
 
