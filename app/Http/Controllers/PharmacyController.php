@@ -38,36 +38,39 @@ class PharmacyController extends Controller
         ]);
 
         return redirect()->route('home')
-                         ->with('success', 'Pharmacie créée avec succès.');
+            ->with('success', 'Pharmacie créée avec succès.');
     }
 
     public function show(Pharmacy $pharmacy)
     {
-        return Inertia::render('Pharmacies/Show', [
+        return Inertia::render('ShowPharmacy', [
             'pharmacy' => $pharmacy->load('user')
         ]);
     }
 
     public function edit(Pharmacy $pharmacy)
     {
-        return Inertia::render('Pharmacies/Edit', [
-            'pharmacy' => $pharmacy,
+
+        return Inertia::render('EditPharmacy', [
+            'pharmacy' => $pharmacy
         ]);
     }
 
+
     public function update(Request $request, Pharmacy $pharmacy)
     {
-        $data = $request->validate([
+        $validated = $request->validate([
             'name' => 'required|string|max:255',
             'address' => 'nullable|string|max:255',
             'phone' => 'nullable|string|max:50',
         ]);
 
-        $pharmacy->update($data);
+        $pharmacy->update($validated);
 
-        return redirect()->route('pharmacies.index')
-                         ->with('success', 'Pharmacie mise à jour.');
+        return redirect()->route('pharmacies.show', $pharmacy->id)
+            ->with('success', 'Pharmacie mise à jour avec succès.');
     }
+
 
     public function destroy(Pharmacy $pharmacy)
     {

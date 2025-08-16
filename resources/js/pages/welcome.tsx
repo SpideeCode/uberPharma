@@ -81,34 +81,36 @@ export default function welcome() {
           Pharmacies disponibles
         </h2>
         {pharmacies && pharmacies.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-            {pharmacies.map((pharmacy: any) => (
-              <div
-                key={pharmacy.id}
-                className="bg-white border border-green-100 rounded-xl shadow hover:shadow-lg transition-shadow p-6 flex flex-col items-start"
-              >
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center text-green-700 font-bold text-xl">
-                    {pharmacy.name.slice(0, 2).toUpperCase()}
-                  </div>
-                  <span className="text-xl font-semibold">{pharmacy.name}</span>
-                </div>
-                <div className="text-gray-600 mb-2">
-                  <span className="font-medium">Adresse : </span>
-                  {pharmacy.address || "Non renseignée"}
-                </div>
-                <div className="text-gray-600">
-                  <span className="font-medium">Téléphone : </span>
-                  {pharmacy.phone || "Non renseigné"}
-                </div>
-              </div>
-            ))}
+  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+    {pharmacies.map((pharmacy: any) => (
+      <Link
+        key={pharmacy.id}
+        href={route("pharmacies.show", pharmacy.id)}
+        className="bg-white border border-green-100 rounded-xl shadow hover:shadow-lg transition-shadow p-6 flex flex-col items-start hover:scale-105 transform"
+      >
+        <div className="flex items-center gap-3 mb-3">
+          <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center text-green-700 font-bold text-xl">
+            {pharmacy.name.slice(0, 2).toUpperCase()}
           </div>
-        ) : (
-          <div className="text-center text-gray-500">
-            Aucune pharmacie disponible pour le moment.
-          </div>
-        )}
+          <span className="text-xl font-semibold">{pharmacy.name}</span>
+        </div>
+        <div className="text-gray-600 mb-2">
+          <span className="font-medium">Adresse : </span>
+          {pharmacy.address || "Non renseignée"}
+        </div>
+        <div className="text-gray-600">
+          <span className="font-medium">Téléphone : </span>
+          {pharmacy.phone || "Non renseigné"}
+        </div>
+      </Link>
+    ))}
+  </div>
+) : (
+  <div className="text-center text-gray-500">
+    Aucune pharmacie disponible pour le moment.
+  </div>
+)}
+
       </main>
     </div>
   );
