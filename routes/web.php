@@ -3,12 +3,24 @@
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\PharmacyController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\DeliveryController;
+use App\Http\Controllers\ReviewController;
+
 use App\Models\Pharmacy;
 use App\Models\Product;
-use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Route;
 
+// Middleware
+use App\Http\Middleware\AdminPass;
+use App\Http\Middleware\PharmacyPass;
+use App\Http\Middleware\ClientPass;
+
+// -----------------------------------------------------------------------------
 // Page d'accueil : toutes les pharmacies et produits
+// -----------------------------------------------------------------------------
 Route::get('/', function () {
     return Inertia::render('welcome', [
         'pharmacies' => Pharmacy::all(),
@@ -17,52 +29,112 @@ Route::get('/', function () {
             'id' => auth()->id(),
             'name' => auth()->user()->name,
             'email' => auth()->user()->email,
+            'role' => auth()->user()->role,
         ] : null,
     ]);
 })->name('home');
 
-
-
-
-// Dashboard (auth)
+// -----------------------------------------------------------------------------
+// Dashboard accessible à tous les utilisateurs authentifiés
+// -----------------------------------------------------------------------------
 Route::middleware(['auth', 'verified'])->get('/dashboard', function () {
     return Inertia::render('Dashboard');
 })->name('dashboard');
 
-// Produits
+// -----------------------------------------------------------------------------
+// Routes accessibles aux clients
+// -----------------------------------------------------------------------------
+Route::middleware(['auth', ClientPass::class])->group(function () {
+    Route::get('/orders', [OrderController::class, 'index']);
+    Route::get('/orders/create', [OrderController::class, 'create']);
+    Route::post('/orders', [OrderController::class, 'store']);
+    Route::post('/payments', [PaymentController::class, 'store']);
+    Route::post('/deliveries/update-location', [DeliveryController::class, 'updateLocation']);
+    Route::post('/reviews', [ReviewController::class, 'store']);
+});
 
-Route::get('/pharmacies/{pharmacy}/products', [ProductController::class, 'index'])->name('products.index');
-Route::get('/products/create', [ProductController::class, 'create'])->name('products.create');
-Route::post('/products', [ProductController::class, 'store'])->name('products.store');
-Route::get('/products/{product}/edit', [ProductController::class, 'edit'])->name('products.edit');
-Route::put('/products/{product}', [ProductController::class, 'update'])->name('products.update');
-Route::delete('/products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
+// -----------------------------------------------------------------------------
+// Routes accessibles aux pharmacies (Client + Pharmacy)
+// -----------------------------------------------------------------------------
+Route::middleware(['auth', PharmacyPass::class])->group(function () {
+    // Pharmacies
+    Route::get('/pharmacies', [PharmacyController::class, 'index'])->name('pharmacies.index');
+    Route::get('/pharmacies/create', [PharmacyController::class, 'create'])->name('pharmacies.create');
+    Route::post('/pharmacies', [PharmacyController::class, 'store'])->name('pharmacies.store');
+    Route::get('/pharmacies/{pharmacy}', [PharmacyController::class, 'show'])->name('pharmacies.show');
+    Route::get('/pharmacies/{pharmacy}/edit', [PharmacyController::class, 'edit'])->name('pharmacies.edit');
+    Route::put('/pharmacies/{pharmacy}', [PharmacyController::class, 'update'])->name('pharmacies.update');
+    Route::delete('/pharmacies/{pharmacy}', [PharmacyController::class, 'destroy'])->name('pharmacies.destroy');
+    Route::get('/mes-pharmacies', [PharmacyController::class, 'myPharmacies'])->name('pharmacies.my');
 
-// Pharmacies
+    // Produits
+    Route::get('/pharmacies/{pharmacy}/products', [ProductController::class, 'index'])->name('products.index');
+    Route::get('/products/create', [ProductController::class, 'create'])->name('products.create');
+    Route::post('/products', [ProductController::class, 'store'])->name('products.store');
+    Route::get('/products/{product}/edit', [ProductController::class, 'edit'])->name('products.edit');
+    Route::put('/products/{product}', [ProductController::class, 'update'])->name('products.update');
+    Route::delete('/products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
+});
 
-Route::get('/pharmacies', [PharmacyController::class, 'index'])->name('pharmacies.index');
-Route::get('/pharmacies/create', [PharmacyController::class, 'create'])->name('pharmacies.create');
-Route::post('/pharmacies', [PharmacyController::class, 'store'])->name('pharmacies.store');
-Route::get('/pharmacies/{pharmacy}', [PharmacyController::class, 'show'])->name('pharmacies.show');
-Route::get('/pharmacies/{pharmacy}/edit', [PharmacyController::class, 'edit'])->name('pharmacies.edit');
-Route::put('/pharmacies/{pharmacy}', [PharmacyController::class, 'update'])->name('pharmacies.update');
-Route::delete('/pharmacies/{pharmacy}', [PharmacyController::class, 'destroy'])->name('pharmacies.destroy');
+// -----------------------------------------------------------------------------
+// Routes accessibles uniquement aux administrateurs (Pharmacy + Admin)
+// -----------------------------------------------------------------------------
+Route::middleware(['auth', AdminPass::class])->group(function () {
+    Route::get('/admin/dashboard', function () {
+        return Inertia::render('AdminDashboard', [
+            'stats' => [
+                'users' => \App\Models\User::count(),
+                'pharmacies' => Pharmacy::count(),
+                'products' => Product::count(),
+            ]
+        ]);
+    })->name('admin.dashboard');
 
-// Optionnel : voir uniquement les pharmacies de l’utilisateur connecté
-Route::get('/mes-pharmacies', [PharmacyController::class, 'myPharmacies'])->name('pharmacies.my');
+    // Gestion des utilisateurs
+    Route::get('/users', function () {
+        return Inertia::render('Users', [
+            'users' => \App\Models\User::all(),
+        ]);
+    })->name('users.index');
 
+    Route::post('/users', function (\Illuminate\Http\Request $request) {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users',
+            'password' => 'required|string|min:6',
+            'role' => 'required|in:client,pharmacy,admin',
+        ]);
 
-// Commandes, Paiements, Livraisons, Avis
-Route::get('/orders', [\App\Http\Controllers\OrderController::class, 'index']);
-Route::get('/orders/create', [\App\Http\Controllers\OrderController::class, 'create']);
-Route::post('/orders', [\App\Http\Controllers\OrderController::class, 'store']);
-Route::post('/payments', [\App\Http\Controllers\PaymentController::class, 'store']);
-Route::post('/deliveries/update-location', [\App\Http\Controllers\DeliveryController::class, 'updateLocation']);
-Route::post('/reviews', [\App\Http\Controllers\ReviewController::class, 'store']);
+        \App\Models\User::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => \Illuminate\Support\Facades\Hash::make($validated['password']),
+            'role' => $validated['role'],
+        ]);
 
+        return redirect()->back();
+    });
 
+    Route::post('/users/{user}/update-role', function (\Illuminate\Http\Request $request, \App\Models\User $user) {
+        $request->validate([
+            'role' => 'required|in:client,pharmacy,admin',
+        ]);
 
+        $user->role = $request->role;
+        $user->save();
 
+        return redirect()->back();
+    });
+
+    Route::delete('/users/{user}', function (\App\Models\User $user) {
+        $user->delete();
+        return redirect()->back();
+    });
+});
+
+// -----------------------------------------------------------------------------
+// Logout
+// -----------------------------------------------------------------------------
 Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
     ->name('logout')
     ->middleware('auth');
