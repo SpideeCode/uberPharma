@@ -18,6 +18,29 @@ use App\Http\Middleware\AdminPass;
 use App\Http\Middleware\PharmacyPass;
 use App\Http\Middleware\ClientPass;
 
+use App\Http\Controllers\AdminDashboardController;
+use App\Http\Controllers\UserController;
+use App\Models\Order;
+use App\Models\Review;
+use App\Models\User;
+
+Route::get('/admin/dashboard', function () {
+    return Inertia::render('AdminDashboard', [
+        'stats' => [
+            'users' => User::count(),
+            'pharmacies' => Pharmacy::count(),
+            'products' => Product::count(),
+            'orders' => Order::count(),
+            'reviews' => Review::count(),
+        ],
+    ]);
+})->middleware(['auth', 'admin'])->name('admin.dashboard');
+
+Route::middleware(['auth', AdminPass::class])->group(function () {
+    Route::get('/admin/users', [UserController::class, 'index'])->name('admin.users');
+    Route::get('/admin/pharmacies', [PharmacyController::class, 'index'])->name('admin.pharmacies');
+    Route::get('/admin/products', [ProductController::class, 'index'])->name('admin.products');
+});
 // -----------------------------------------------------------------------------
 // Page d'accueil : toutes les pharmacies et produits
 // -----------------------------------------------------------------------------
@@ -51,6 +74,7 @@ Route::middleware(['auth', ClientPass::class])->group(function () {
     Route::post('/payments', [PaymentController::class, 'store']);
     Route::post('/deliveries/update-location', [DeliveryController::class, 'updateLocation']);
     Route::post('/reviews', [ReviewController::class, 'store']);
+    Route::get('/pharmacies/{pharmacy}', [PharmacyController::class, 'show'])->name('pharmacies.show');
 });
 
 // -----------------------------------------------------------------------------
@@ -61,7 +85,6 @@ Route::middleware(['auth', PharmacyPass::class])->group(function () {
     Route::get('/pharmacies', [PharmacyController::class, 'index'])->name('pharmacies.index');
     Route::get('/pharmacies/create', [PharmacyController::class, 'create'])->name('pharmacies.create');
     Route::post('/pharmacies', [PharmacyController::class, 'store'])->name('pharmacies.store');
-    Route::get('/pharmacies/{pharmacy}', [PharmacyController::class, 'show'])->name('pharmacies.show');
     Route::get('/pharmacies/{pharmacy}/edit', [PharmacyController::class, 'edit'])->name('pharmacies.edit');
     Route::put('/pharmacies/{pharmacy}', [PharmacyController::class, 'update'])->name('pharmacies.update');
     Route::delete('/pharmacies/{pharmacy}', [PharmacyController::class, 'destroy'])->name('pharmacies.destroy');

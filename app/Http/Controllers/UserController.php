@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
+use Inertia\Inertia;
 
 class UserController extends Controller
 {
@@ -12,9 +13,11 @@ class UserController extends Controller
      * Display a listing of the resource.
      */
     public function index()
-    {
-        //
-    }
+{
+    return Inertia::render('AdminUsers', [
+        'users' => User::all(),
+    ]);
+}
 
     /**
      * Show the form for creating a new resource.
