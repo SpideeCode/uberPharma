@@ -1,4 +1,4 @@
-import { usePage, Link } from '@inertiajs/react';
+import { usePage, Link } from "@inertiajs/react";
 
 export default function AdminDashboard() {
   const { stats } = usePage().props;
@@ -9,16 +9,36 @@ export default function AdminDashboard() {
         <h1 className="text-3xl font-bold mb-6">Tableau de bord Admin</h1>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          <StatCard title="Utilisateurs" count={stats.users}  href={route('admin.users')} />
-          <StatCard title="Pharmacies" count={stats.pharmacies}  href={route('admin.users')} />
-          <StatCard title="Produits" count={stats.products}  href={route('admin.users')} />
+          <StatCard
+            title="Utilisateurs"
+            count={stats.users}
+            href={route("admin.users")}
+          />
+          <StatCard
+            title="Pharmacies"
+            count={stats.pharmacies}
+            href={route("admin.pharmacies")}
+          />
+          <StatCard
+            title="Produits"
+            count={stats.products}
+            href={route("admin.products")}
+          />
         </div>
       </div>
     </div>
   );
 }
 
-function StatCard({ title, count, href }: { title: string; count: number; href?: string }) {
+function StatCard({
+  title,
+  count,
+  href,
+}: {
+  title: string;
+  count: number;
+  href?: string;
+}) {
   if (href) {
     return (
       <Link

@@ -8,14 +8,16 @@ use Inertia\Inertia;
 
 class PharmacyController extends Controller
 {
-    public function index()
-    {
-        $pharmacies = Pharmacy::with('user')->get();
+   public function index()
+{
+    $pharmacies = Pharmacy::with('user')->get();
 
-        return Inertia::render('Index', [
-            'pharmacies' => $pharmacies
-        ]);
-    }
+    
+    return Inertia::render('AdminPharmacies', [
+        'pharmacies' => $pharmacies
+    ]);
+}
+
 
     public function create()
     {
