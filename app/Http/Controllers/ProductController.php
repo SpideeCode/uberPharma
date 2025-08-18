@@ -9,6 +9,14 @@ use Inertia\Inertia;
 
 class ProductController extends Controller
 {
+    public function index()
+{
+    $products = Product::with('pharmacy')->get();
+
+    return Inertia::render('AdminProducts', [
+        'products' => $products
+    ]);
+}
     // Formulaire création produit
  public function create(Request $request)
 {
