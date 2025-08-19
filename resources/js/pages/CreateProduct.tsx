@@ -1,8 +1,11 @@
 import { useState } from "react";
 import { router } from "@inertiajs/react";
 import { Head } from "@inertiajs/react";
+import Nav from '../components/Nav';
+import { type SharedData } from "@/types";
 
 export default function CreateProduct({ pharmacy }: any) {
+  const { auth } = usePage<SharedData>().props;
   const [form, setForm] = useState({ name: "", price: "", stock: "" });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -32,6 +35,7 @@ export default function CreateProduct({ pharmacy }: any) {
 
   return (
     <div className="min-h-screen bg-white text-green-700">
+      <Nav />
       <Head title={`Ajouter produit - ${pharmacy.name}`} />
       <main className="max-w-3xl mx-auto p-6">
         <h1 className="text-2xl font-bold mb-4">

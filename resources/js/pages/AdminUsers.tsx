@@ -1,9 +1,13 @@
 import { router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
+import Nav from '../components/Nav';
+import { type SharedData } from "@/types";
+
 
 
 export default function AdminUsers() {
   const { users } = usePage().props;
+  const { auth } = usePage<SharedData>().props;
   const [newUser, setNewUser] = useState({
     name: '',
     email: '',
@@ -35,7 +39,7 @@ export default function AdminUsers() {
 
   return (
     <div className="min-h-screen bg-white text-black">
- 
+      <Nav />
       <div className="p-6">
         <h1 className="text-3xl font-bold mb-6">Gestion des utilisateurs</h1>
 

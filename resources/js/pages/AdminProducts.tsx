@@ -1,8 +1,13 @@
 import { usePage, router, Link } from "@inertiajs/react";
 import { useState } from "react";
+import Nav from '../components/Nav';
+import { type SharedData } from "@/types";
+
 
 export default function AdminProducts() {
   const { products, pharmacies } = usePage().props;
+  const { auth } = usePage<SharedData>().props;
+    console.log(auth);
   const [newProduct, setNewProduct] = useState({
     name: "",
     price: 0,
@@ -31,6 +36,7 @@ export default function AdminProducts() {
 
   return (
     <div className="min-h-screen bg-white text-black">
+        <Nav />
       <div className="p-6">
         <h1 className="text-3xl font-bold mb-6">Gestion des produits</h1>
 

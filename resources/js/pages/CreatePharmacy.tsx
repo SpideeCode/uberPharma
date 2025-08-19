@@ -1,7 +1,10 @@
 import { router } from '@inertiajs/react';
 import { useState } from 'react';
+import Nav from '../components/Nav';
+import { type SharedData } from "@/types";
 
 export default function CreatePharmacy() {
+  const { auth } = usePage<SharedData>().props;
   const [form, setForm] = useState({
     name: '',
     address: '',
@@ -20,6 +23,7 @@ export default function CreatePharmacy() {
 
   return (
     <div className="min-h-screen bg-white text-black">
+      <Nav />
       <div className="mx-auto max-w-3xl p-6">
         <h1 className="mb-4 text-2xl font-bold">Créer une pharmacie</h1>
 

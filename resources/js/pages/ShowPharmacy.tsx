@@ -1,6 +1,10 @@
 import { Link, Head, router } from "@inertiajs/react";
+import Nav from '../components/Nav';
+import { type SharedData } from "@/types";
+
 
 export default function ShowPharmacy({ pharmacy }: any) {
+  const { auth } = usePage<SharedData>().props;
   const handleDelete = (productId: number) => {
     if (confirm("Supprimer ce produit ?")) {
       // On utilise directement l'URL plutôt que route() pour simplifier
@@ -14,6 +18,7 @@ export default function ShowPharmacy({ pharmacy }: any) {
 
   return (
     <div className="min-h-screen bg-white text-green-700">
+    <Nav />
       <Head title={pharmacy.name} />
 
       {/* Header */}

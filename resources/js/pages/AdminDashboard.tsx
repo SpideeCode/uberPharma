@@ -1,10 +1,15 @@
 import { usePage, Link } from "@inertiajs/react";
+import Nav from '../components/Nav';
+import { type SharedData } from "@/types";
 
 export default function AdminDashboard() {
   const { stats } = usePage().props;
+  const { auth } = usePage<SharedData>().props;
+    console.log(auth);
 
   return (
     <div className="min-h-screen bg-white text-black">
+        <Nav />
       <div className="p-6">
         <h1 className="text-3xl font-bold mb-6">Tableau de bord Admin</h1>
 

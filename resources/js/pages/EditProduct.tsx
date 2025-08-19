@@ -1,8 +1,12 @@
 import { useState } from "react";
 import { router } from "@inertiajs/react";
 import { Head } from "@inertiajs/react";
+import Nav from '../components/Nav';
+import { type SharedData } from "@/types";
+
 
 export default function EditProduct({ pharmacy, product }: any) {
+  const { auth } = usePage<SharedData>().props;
   const [form, setForm] = useState({
     name: product.name,
     price: product.price,
@@ -21,6 +25,7 @@ export default function EditProduct({ pharmacy, product }: any) {
 
   return (
     <div className="min-h-screen bg-white text-green-700">
+      <Nav />
       <Head title={`Modifier ${product.name}`} />
       <main className="max-w-3xl mx-auto p-6">
         <h1 className="text-2xl font-bold mb-4">Modifier {product.name}</h1>

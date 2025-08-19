@@ -1,7 +1,11 @@
 import { router, usePage, Link } from '@inertiajs/react';
 import { useState } from 'react';
+import Nav from '../components/Nav';
+import { type SharedData } from "@/types";
+
 
 export default function AdminPharmacies() {
+  const { auth } = usePage<SharedData>().props;
   const { pharmacies } = usePage().props;
   const [newPharmacy, setNewPharmacy] = useState({
     name: '',
@@ -27,7 +31,9 @@ export default function AdminPharmacies() {
 
   return (
     <div >
+      <Nav />
       <div className="p-6">
+      
         <h1 className="text-3xl font-bold mb-6">Gestion des pharmacies</h1>
 
         <form onSubmit={handleCreatePharmacy} className="mb-8 rounded border border-gray-300 bg-gray-50 p-4">

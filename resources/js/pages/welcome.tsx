@@ -2,6 +2,8 @@ import { Head, Link, usePage } from "@inertiajs/react";
 import { type SharedData } from "@/types";
 import { router } from "@inertiajs/react";
 import { useEffect } from "react";
+import Nav from '../components/Nav';
+
 
 export default function welcome() {
   const { pharmacies, auth } = usePage<SharedData>().props;
@@ -11,7 +13,7 @@ export default function welcome() {
       <Head title="UberPharma - Accueil" />
 
       {/* Header style UberEats */}
-      <header className="bg-green-700 text-white p-6 flex justify-between items-center shadow-md">
+      {/* <header className="bg-green-700 text-white p-6 flex justify-between items-center shadow-md">
         <div className="flex items-center gap-2">
           <svg
             width="40"
@@ -66,7 +68,9 @@ export default function welcome() {
             </>
           )}
         </nav>
-      </header>
+      </header> */}
+     <Nav />
+
 
       {/* Hero section */}
       <section className="bg-gradient-to-r from-green-600 to-green-400 text-white py-16 px-4 text-center">
