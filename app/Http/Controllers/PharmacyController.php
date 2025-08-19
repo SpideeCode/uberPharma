@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Cart;
 use App\Models\Pharmacy;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -43,16 +44,29 @@ class PharmacyController extends Controller
             ->with('success', 'Pharmacie créée avec succès.');
     }
 
-    public function show(Pharmacy $pharmacy)
-    {
-        $pharmacy->load('products'); // <- indispensable
-        $pharmacy->load('user'); // <- indispensable
+public function show(Pharmacy $pharmacy)
+{
+    // Charger les relations essentielles
+    $pharmacy->load('products', 'user');
 
-
-        return Inertia::render('ShowPharmacy', [
-            'pharmacy' => $pharmacy,
-        ]);
+    // Récupérer le panier de l'utilisateur connecté pour cette pharmacie
+    $cart = null;
+    if (auth()->check() && auth()->user()->role === 'client') {
+        $cart = Cart::with('items.product')
+            ->where('user_id', auth()->id())
+            ->where('pharmacy_id', $pharmacy->id)
+            ->first();
     }
+
+    return Inertia::render('ShowPharmacy', [
+        'pharmacy' => $pharmacy,
+        'cart'     => $cart,
+        'auth'     => auth()->user(), // pour le frontend
+    ]);
+}
+
+
+
 
 
     public function edit(Pharmacy $pharmacy)

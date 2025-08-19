@@ -7,7 +7,7 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\DeliveryController;
 use App\Http\Controllers\ReviewController;
-
+use App\Http\Controllers\CartController;
 use App\Models\Pharmacy;
 use App\Models\Product;
 use Inertia\Inertia;
@@ -67,7 +67,11 @@ Route::middleware(['auth', 'verified'])->get('/dashboard', function () {
 // -----------------------------------------------------------------------------
 // Routes accessibles aux clients
 // -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+// Routes accessibles aux clients
+// -----------------------------------------------------------------------------
 Route::middleware(['auth', ClientPass::class])->group(function () {
+    // Commandes
     Route::get('/orders', [OrderController::class, 'index']);
     Route::get('/orders/create', [OrderController::class, 'create']);
     Route::post('/orders', [OrderController::class, 'store']);
@@ -75,7 +79,14 @@ Route::middleware(['auth', ClientPass::class])->group(function () {
     Route::post('/deliveries/update-location', [DeliveryController::class, 'updateLocation']);
     Route::post('/reviews', [ReviewController::class, 'store']);
     Route::get('/pharmacies/{pharmacy}', [PharmacyController::class, 'show'])->name('pharmacies.show');
+
+    // Panier
+    Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
+    Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
+    Route::post('/cart/remove', [CartController::class, 'remove'])->name('cart.remove');
+    Route::post('/cart/clear', [CartController::class, 'clear'])->name('cart.clear');
 });
+
 
 // -----------------------------------------------------------------------------
 // Routes accessibles aux pharmacies (Client + Pharmacy)
