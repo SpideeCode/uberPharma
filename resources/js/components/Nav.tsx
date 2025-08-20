@@ -68,17 +68,33 @@ export default function Nav() {
               </>
             )}
 
-            {auth && (
-              <div className="ml-4 flex items-center gap-2">
-                <span className="font-medium">Bonjour {auth.name}</span>
-                <button
-                  onClick={() => router.post(route("logout"))}
-                  className="px-3 py-1 bg-red-600 rounded hover:bg-red-700 transition"
-                >
-                  Déconnexion
-                </button>
-              </div>
-            )}
+            {auth ? (
+  <div className="ml-4 flex items-center gap-2">
+    <span className="font-medium">Bonjour {auth.name}</span>
+    <button
+      onClick={() => router.post(route("logout"))}
+      className="px-3 py-1 bg-red-600 rounded hover:bg-red-700 transition"
+    >
+      Déconnexion
+    </button>
+  </div>
+) : (
+  <div className="ml-4 flex items-center gap-2">
+    <Link
+      href="/login"
+      className="px-3 py-1 bg-blue-600 rounded hover:bg-blue-700 transition"
+    >
+      Connexion
+    </Link>
+    <Link
+      href="/register"
+      className="px-3 py-1 bg-green-600 rounded hover:bg-green-700 transition"
+    >
+      Inscription
+    </Link>
+  </div>
+)}
+
           </nav>
 
           {/* Mobile Menu Button */}
@@ -161,13 +177,31 @@ export default function Nav() {
             </>
           )}
 
-          {auth && (
-            <button
-              onClick={() => router.post(route("logout"))}
-              className="mt-2 px-3 py-1 bg-red-600 rounded hover:bg-red-700 transition"
-            >
-              Déconnexion
-            </button>
+          {auth ? (
+            <div className="ml-4 flex items-center gap-2">
+              <span className="font-medium">Bonjour {auth.name}</span>
+              <button
+                onClick={() => router.post(route("logout"))}
+                className="px-3 py-1 bg-red-600 rounded hover:bg-red-700 transition"
+              >
+                Déconnexion
+              </button>
+            </div>
+          ) : (
+            <div className="ml-4 flex items-center gap-2">
+              <Link
+                href="/login"
+                className="px-3 py-1 bg-blue-600 rounded hover:bg-blue-700 transition"
+              >
+                Connexion
+              </Link>
+              <Link
+                href="/register"
+                className="px-3 py-1 bg-green-600 rounded hover:bg-green-700 transition"
+              >
+                Inscription
+              </Link>
+            </div>
           )}
         </nav>
       )}
