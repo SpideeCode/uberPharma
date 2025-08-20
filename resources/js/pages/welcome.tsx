@@ -12,63 +12,7 @@ export default function welcome() {
     <div className="min-h-screen bg-white text-green-700">
       <Head title="UberPharma - Accueil" />
 
-      {/* Header style UberEats */}
-      {/* <header className="bg-green-700 text-white p-6 flex justify-between items-center shadow-md">
-        <div className="flex items-center gap-2">
-          <svg
-            width="40"
-            height="40"
-            viewBox="0 0 40 40"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <circle cx="20" cy="20" r="20" fill="#22c55e" />
-            <text
-              x="50%"
-              y="55%"
-              textAnchor="middle"
-              fill="white"
-              fontSize="18"
-              fontWeight="bold"
-              dy=".3em"
-            >
-              UP
-            </text>
-          </svg>
-          <span className="text-2xl font-bold tracking-tight">UberPharma</span>
-        </div>
-        <nav className="flex gap-4">
-          {auth?.role === "admin" && (
-            <Link
-              href={route("admin.dashboard")}
-              className="px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-            >
-              Admin Dashboard
-            </Link>
-          )}
-
-          {auth ? (
-            <div className="flex items-center gap-4">
-              <span>Bonjour {auth.name}</span>
-              <button
-                onClick={() => router.post(route("logout"))} // utilisez route('logout') pour générer l'URL Laravel
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
-              >
-                Déconnexion
-              </button>
-            </div>
-          ) : (
-            <>
-              <Link href="/login" className="hover:underline">
-                Connexion
-              </Link>
-              <Link href="/register" className="hover:underline">
-                Inscription
-              </Link>
-            </>
-          )}
-        </nav>
-      </header> */}
+     
      <Nav />
 
 
@@ -88,12 +32,7 @@ export default function welcome() {
         <h2 className="text-3xl font-bold mb-8 text-green-700">
           Pharmacies disponibles
         </h2>
-        <Link
-          href={route("pharmacies.create")}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-        >
-          Ajouter une pharmacie
-        </Link>
+        
         {pharmacies && pharmacies.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
             {pharmacies.map((pharmacy: any) => (

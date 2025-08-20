@@ -45,7 +45,7 @@ Route::middleware(['auth', AdminPass::class])->group(function () {
 // Page d'accueil : toutes les pharmacies et produits
 // -----------------------------------------------------------------------------
 Route::get('/', function () {
-    return Inertia::render('welcome', [
+    return Inertia::render('Welcome', [
         'pharmacies' => Pharmacy::all(),
         'products' => Product::all(),
         'auth' => auth()->check() ? [
