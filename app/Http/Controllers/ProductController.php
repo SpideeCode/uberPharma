@@ -10,13 +10,15 @@ use Inertia\Inertia;
 class ProductController extends Controller
 {
     public function index()
-{
-    $products = Product::with('pharmacy')->get();
+    {
+        $products = Product::with('pharmacy')->get();
+        $pharmacies = Pharmacy::all();
 
-    return Inertia::render('AdminProducts', [
-        'products' => $products
-    ]);
-}
+        return Inertia::render('AdminProducts', [
+            'products' => $products,
+            'pharmacies' => $pharmacies,
+        ]);
+    }
     // Formulaire création produit
  public function create(Request $request)
 {

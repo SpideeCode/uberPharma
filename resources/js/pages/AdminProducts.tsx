@@ -1,13 +1,12 @@
 import { usePage, router, Link } from "@inertiajs/react";
 import { useState } from "react";
-import Nav from '../components/Nav';
+import Nav from "../components/Nav";
 import { type SharedData } from "@/types";
-
 
 export default function AdminProducts() {
   const { products, pharmacies } = usePage().props;
   const { auth } = usePage<SharedData>().props;
-    console.log(auth);
+  console.log(auth);
   const [newProduct, setNewProduct] = useState({
     name: "",
     price: 0,
@@ -36,7 +35,7 @@ export default function AdminProducts() {
 
   return (
     <div className="min-h-screen bg-white text-black">
-        <Nav />
+      <Nav />
       <div className="p-6">
         <h1 className="text-3xl font-bold mb-6">Gestion des produits</h1>
 
@@ -78,15 +77,17 @@ export default function AdminProducts() {
               name="pharmacy_id"
               value={newProduct.pharmacy_id}
               onChange={handleNewProductChange}
-              className="rounded border border-gray-400 px-3 py-2 focus:ring focus:ring-gray-400 focus:outline-none"
+              className="w-full rounded border border-gray-400 px-3 py-2 focus:ring focus:ring-gray-400 focus:outline-none"
               required
             >
-              <option value="">Sélectionner une pharmacie</option>
-              {/* {pharmacies.map((pharmacy: any) => (
+              <option value="" disabled>
+                -- Choisir une pharmacie --
+              </option>
+              {pharmacies.map((pharmacy: any) => (
                 <option key={pharmacy.id} value={pharmacy.id}>
-                  {pharmacy.name}
+                  {pharmacy.name} {pharmacy.address && ` - ${pharmacy.address}`}
                 </option>
-              ))} */}
+              ))}
             </select>
           </div>
           <button
