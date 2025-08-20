@@ -9,6 +9,7 @@ use App\Http\Controllers\DeliveryController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\PharmacyDashboardController;
+use App\Http\Controllers\PharmacyProductController;
 use App\Models\Pharmacy;
 use App\Models\Product;
 use Inertia\Inertia;
@@ -175,6 +176,19 @@ Route::middleware(['auth', PharmacyPass::class])
     ->group(function () {
         Route::get('/dashboard', [PharmacyDashboardController::class, 'index'])
             ->name('dashboard');
+    });
+
+
+Route::middleware(['auth', PharmacyPass::class])
+    ->prefix('pharmacy')
+    ->name('pharmacy.')
+    ->group(function () {
+        // Page de gestion des produits pour le pharmacien
+        Route::get('/products', [PharmacyProductController::class, 'index'])->name('products.index');
+        Route::post('/products', [PharmacyProductController::class, 'store'])->name('products.store');
+        Route::get('/products/{product}/edit', [PharmacyProductController::class, 'edit'])->name('products.edit');
+        Route::put('/products/{product}', [PharmacyProductController::class, 'update'])->name('products.update');
+        Route::delete('/products/{product}', [PharmacyProductController::class, 'destroy'])->name('products.destroy');
     });
 
 // -----------------------------------------------------------------------------
