@@ -19,7 +19,7 @@ export default function ShowPharmacy({ pharmacy, cart }: { pharmacy: any, cart: 
                     ← Retour à l’accueil
                 </Link>
 
-                {auth.role === 'client' && (
+                {auth?.role === 'client' && (
                     <button
                         onClick={() => setIsCartOpen(!isCartOpen)}
                         className="rounded bg-white px-4 py-2 text-green-700 shadow hover:bg-gray-200"
@@ -39,6 +39,18 @@ export default function ShowPharmacy({ pharmacy, cart }: { pharmacy: any, cart: 
                     <p><span className="font-medium">Propriétaire :</span> {pharmacy.user?.name || 'Inconnu'}</p>
                 </div>
 
+                {/* Ajouter un produit pour pharmacy/admin */}
+                {(auth?.role === 'pharmacy' || auth?.role === 'admin') && (
+                    <div className="mb-4">
+                        <Link
+                            href={`/products/create?pharmacy_id=${pharmacy.id}`}
+                            className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
+                        >
+                            + Ajouter un produit
+                        </Link>
+                    </div>
+                )}
+
                 <section>
                     <h2 className="mb-2 text-2xl font-bold">Produits disponibles</h2>
                     {pharmacy.products?.length > 0 ? (
@@ -49,7 +61,8 @@ export default function ShowPharmacy({ pharmacy, cart }: { pharmacy: any, cart: 
                                     <p>Prix : {product.price} €</p>
                                     <p>Stock : {product.stock}</p>
 
-                                    {auth.role === 'client' && (
+                                    {/* Actions pour clients */}
+                                    {auth?.role === 'client' && (
                                         <div className="mt-2 flex gap-2">
                                             <input
                                                 type="number"
@@ -78,6 +91,27 @@ export default function ShowPharmacy({ pharmacy, cart }: { pharmacy: any, cart: 
                                             </button>
                                         </div>
                                     )}
+
+                                    {/* Actions pour pharmacy/admin */}
+                                    {(auth?.role === 'pharmacy' || auth?.role === 'admin') && (
+                                        <div className="mt-2 flex gap-2">
+                                            <Link
+                                                href={`/products/${product.id}/edit`}
+                                                className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+                                            >
+                                                Modifier
+                                            </Link>
+                                            <button
+                                                onClick={() => {
+                                                    if (!confirm('Voulez-vous vraiment supprimer ce produit ?')) return;
+                                                    router.delete(`/products/${product.id}`);
+                                                }}
+                                                className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700"
+                                            >
+                                                Supprimer
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
                             ))}
                         </div>
@@ -88,7 +122,7 @@ export default function ShowPharmacy({ pharmacy, cart }: { pharmacy: any, cart: 
             </main>
 
             {/* CartSidebar */}
-            {auth.role === 'client' && (
+            {auth?.role === 'client' && (
                 <CartSidebar
                     isOpen={isCartOpen}
                     toggle={() => setIsCartOpen(false)}

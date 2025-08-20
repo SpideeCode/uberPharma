@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { router } from "@inertiajs/react";
+import { router, usePage } from "@inertiajs/react";
 import { Head } from "@inertiajs/react";
 import Nav from '../components/Nav';
 import { type SharedData } from "@/types";

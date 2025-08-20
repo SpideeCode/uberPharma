@@ -8,6 +8,7 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\DeliveryController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\PharmacyDashboardController;
 use App\Models\Pharmacy;
 use App\Models\Product;
 use Inertia\Inertia;
@@ -23,6 +24,7 @@ use App\Http\Controllers\UserController;
 use App\Models\Order;
 use App\Models\Review;
 use App\Models\User;
+
 
 Route::get('/admin/dashboard', function () {
     return Inertia::render('AdminDashboard', [
@@ -165,6 +167,15 @@ Route::middleware(['auth', AdminPass::class])->group(function () {
         return redirect()->back();
     });
 });
+
+
+Route::middleware(['auth', PharmacyPass::class])
+    ->prefix('pharmacy')
+    ->name('pharmacy.')
+    ->group(function () {
+        Route::get('/dashboard', [PharmacyDashboardController::class, 'index'])
+            ->name('dashboard');
+    });
 
 // -----------------------------------------------------------------------------
 // Logout

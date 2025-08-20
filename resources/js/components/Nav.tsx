@@ -39,9 +39,8 @@ export default function Nav() {
 
             {auth?.role === "pharmacy" && (
               <>
-                <Link href="/pharmacy/dashboard" className="hover:underline">
-                  Mon Dashboard
-                </Link>
+                <Link href={route('pharmacy.dashboard')}>Mon Dashboard</Link>
+
                 <Link href="/pharmacy/products" className="hover:underline">
                   Mes produits
                 </Link>
