@@ -7,11 +7,24 @@ use Illuminate\Database\Eloquent\Model;
 
 class Order extends Model
 {
-    /** @use HasFactory<\Database\Factories\OrderFactory> */
     use HasFactory;
-    public function client()
+
+    protected $fillable = [
+        'client_id',
+        'pharmacy_id',
+        'courier_id',
+        'status',
+        'total_price',
+        'payment_status',
+        'delivery_address',
+        'delivery_latitude',
+        'delivery_longitude',
+    ];
+
+    // relations éventuelles
+    public function items()
     {
-        return $this->belongsTo(User::class, 'client_id');
+        return $this->hasMany(OrderItem::class);
     }
 
     public function pharmacy()
@@ -19,10 +32,13 @@ class Order extends Model
         return $this->belongsTo(Pharmacy::class);
     }
 
-    public function products()
+    public function client()
     {
-        return $this->belongsToMany(Product::class, 'order_items')
-            ->withPivot('quantity')
-            ->withTimestamps();
+        return $this->belongsTo(User::class, 'client_id');
+    }
+
+    public function courier()
+    {
+        return $this->belongsTo(User::class, 'courier_id');
     }
 }

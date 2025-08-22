@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { Link } from "@inertiajs/react";
+import Nav from "@/components/Nav";
 
 export default function Dashboard({ pharmacies }: any) {
   return (
-    <div className="p-6">
+    <div >
+      <Nav />
       <h1 className="text-2xl font-bold mb-4">Dashboard Pharmacie</h1>
 
       {pharmacies.length === 0 ? (

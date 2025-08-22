@@ -2,65 +2,90 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Payment;
-use App\Http\Requests\StorePaymentRequest;
-use App\Http\Requests\UpdatePaymentRequest;
+use App\Models\Cart;
+use App\Models\Order;
+use App\Models\OrderItem;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Illuminate\Support\Facades\DB;
 
 class PaymentController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Affiche la page de paiement avec le panier.
      */
     public function index()
     {
-        //
+        $cart = Cart::with('items.product')
+            ->where('user_id', auth()->id())
+            ->first();
+
+        return Inertia::render('Payment', [
+            'cart' => $cart,
+        ]);
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Simule le paiement, crée la commande et redirige vers confirmation.
      */
-    public function create()
-    {
-        //
+
+public function store(Request $request)
+{
+    $cart = Cart::with('items.product')->where('user_id', auth()->id())->first();
+
+    if (!$cart || $cart->items->isEmpty()) {
+        return redirect()->back()->with('error', 'Votre panier est vide.');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StorePaymentRequest $request)
-    {
-        //
-    }
+    $estimatedMinutes = 30;
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Payment $payment)
-    {
-        //
-    }
+    $order = DB::transaction(function () use ($cart, $request) {
+        $cartItems = $cart->items;
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Payment $payment)
-    {
-        //
-    }
+        $order = Order::create([
+            'client_id' => auth()->id(),
+            'pharmacy_id' => $cartItems->first()->product->pharmacy_id,
+            'courier_id' => null,
+            'status' => 'pending',
+            'payment_status' => 'paid',
+            'total_price' => $cartItems->sum(fn($item) => $item->product->price * $item->quantity),
+            'delivery_address' => $request->input('delivery_address', 'Adresse du client'),
+            'delivery_latitude' => $request->input('delivery_latitude', 0),
+            'delivery_longitude' => $request->input('delivery_longitude', 0),
+        ]);
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdatePaymentRequest $request, Payment $payment)
-    {
-        //
-    }
+        foreach ($cartItems as $item) {
+            OrderItem::create([
+                'order_id' => $order->id,
+                'product_id' => $item->product_id,
+                'quantity' => $item->quantity,
+                'price' => $item->product->price,
+            ]);
+        }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Payment $payment)
-    {
-        //
-    }
+        // Vider le panier
+        $cart->items()->delete();
+
+        return $order;
+    });
+
+    // 🔹 Ici on recharge la commande avec les items pour qu'ils soient disponibles
+    $order->load('items.product');
+
+   return redirect()->route('order.confirmation', ['order' => $order->id])
+                 ->with(['estimatedMinutes' => $estimatedMinutes]);
+
+}
+
+public function confirmation(Order $order, Request $request)
+{
+    // Charger les items et les produits associés
+    $order->load('items.product');
+
+    return Inertia::render('OrderConfirmation', [
+        'order' => $order,
+        'estimatedMinutes' => $request->session()->get('estimatedMinutes', 30),
+    ]);
+}
+
 }

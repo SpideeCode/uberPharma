@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use App\Http\Requests\StoreOrderRequest;
 use App\Http\Requests\UpdateOrderRequest;
+use Inertia\Inertia;
 
 class OrderController extends Controller
 {
@@ -62,5 +63,14 @@ class OrderController extends Controller
     public function destroy(Order $order)
     {
         //
+    }
+
+    public function confirmation($orderId)
+    {
+        $order = Order::with('items.product', 'pharmacy')->findOrFail($orderId);
+
+        return Inertia::render('OrderConfirmation', [
+            'order' => $order,
+        ]);
     }
 }

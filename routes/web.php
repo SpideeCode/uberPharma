@@ -191,6 +191,25 @@ Route::middleware(['auth', PharmacyPass::class])
         Route::delete('/products/{product}', [PharmacyProductController::class, 'destroy'])->name('products.destroy');
     });
 
+
+
+Route::middleware(['auth'])->group(function () {
+Route::get('/payment', [PaymentController::class, 'index'])->name('payment.index');
+});
+
+
+
+
+Route::post('/payment', [PaymentController::class, 'store'])->name('payment.store');
+
+// Route::get('/orders/{order}/confirmation', [OrderController::class, 'confirmation'])
+//     ->name('orders.confirmation');
+
+
+
+Route::get('/order/confirmation/{order}', [PaymentController::class, 'confirmation'])
+     ->name('order.confirmation');
+
 // -----------------------------------------------------------------------------
 // Logout
 // -----------------------------------------------------------------------------
