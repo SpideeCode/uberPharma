@@ -17,7 +17,7 @@ class OrderController extends Controller
     {
         // Toutes les commandes du client connecté
         $orders = Order::with('items.product', 'pharmacy')
-            ->where('client_id', Auth::id()) // ← ici
+            ->where('user_id', Auth::id()) // ← ici
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -50,7 +50,7 @@ class OrderController extends Controller
     public function show(Order $order)
     {
         // Vérifie que la commande appartient bien au client
-        if ($order->client_id !== Auth::id()) { // ← ici
+        if ($order->user_id !== Auth::id()) { // ← ici
             abort(403);
         }
 
@@ -97,4 +97,28 @@ class OrderController extends Controller
             'order' => $order,
         ]);
     }
+
+
+    public function sendToPharmacy(Order $order)
+{
+    // Vérifie que le client est propriétaire de la commande
+    if ($order->user_id !== Auth::id()) {
+        abort(403);
+    }
+
+    // Vérifie que la commande n'est pas déjà envoyée
+    if ($order->status !== 'pending') {
+        return back()->with('error', 'Cette commande a déjà été envoyée.');
+    }
+
+    // Change le statut
+    $order->status = 'sent';
+    $order->save();
+
+    // Optionnel : notifier la pharmacie
+    // event(new OrderSentToPharmacy($order));
+
+    return back()->with('success', 'Commande envoyée à la pharmacie.');
+}
+
 }

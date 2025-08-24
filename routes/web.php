@@ -73,9 +73,7 @@ Route::middleware(['auth', 'verified'])->get('/dashboard', function () {
 // -----------------------------------------------------------------------------
 // Routes clients
 // -----------------------------------------------------------------------------
-// -----------------------------------------------------------------------------
-// Routes clients
-// -----------------------------------------------------------------------------
+
 Route::middleware(['auth', ClientPass::class])->group(function () {
     // Historique des commandes (ClientOrders.tsx)
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
@@ -109,6 +107,10 @@ Route::middleware(['auth', ClientPass::class])->group(function () {
     Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
     Route::post('/cart/remove', [CartController::class, 'remove'])->name('cart.remove');
     Route::post('/cart/clear', [CartController::class, 'clear'])->name('cart.clear');
+
+
+    Route::post('/orders/{order}/send-to-pharmacy', [OrderController::class, 'sendToPharmacy'])
+        ->name('orders.send');
 });
 
 

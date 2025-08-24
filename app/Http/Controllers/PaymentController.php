@@ -60,11 +60,12 @@ class PaymentController extends Controller
         $order = DB::transaction(function () use ($cart, $request) {
             $cartItems = $cart->items;
 
+            // Création de la commande
             $order = Order::create([
-                'client_id' => auth()->id(),
-                'pharmacy_id' => $cart->pharmacy->id, // <- assure-toi de prendre la pharmacy du cart
+                'user_id' => auth()->id(),
+                'pharmacy_id' => $cart->pharmacy->id,
                 'courier_id' => null,
-                'status' => 'pending',
+                'status' => 'pending', // doit correspondre à l'enum de la BDD
                 'payment_status' => 'paid',
                 'total_price' => $cartItems->sum(fn($item) => $item->price_at_addition * $item->quantity),
                 'delivery_address' => $request->input('delivery_address', 'Adresse du client'),
@@ -72,6 +73,7 @@ class PaymentController extends Controller
                 'delivery_longitude' => $request->input('delivery_longitude', 0),
             ]);
 
+            // Création des items de la commande
             foreach ($cartItems as $item) {
                 OrderItem::create([
                     'order_id' => $order->id,
@@ -81,20 +83,24 @@ class PaymentController extends Controller
                 ]);
             }
 
+            // Vide le panier
             $cart->items()->delete();
 
             return $order;
         });
 
-        $order->load('items.product', 'pharmacy'); // <- important
+        $order->load('items.product', 'pharmacy');
 
         return redirect()->route('order.confirmation', ['order' => $order->id])
             ->with(['estimatedMinutes' => $estimatedMinutes]);
     }
 
+    /**
+     * Page de confirmation de la commande après paiement
+     */
     public function confirmation(Order $order, Request $request)
     {
-        $order->load('items.product', 'pharmacy'); // <- important
+        $order->load('items.product', 'pharmacy');
 
         return Inertia::render('OrderConfirmation', [
             'order' => $order,

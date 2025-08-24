@@ -28,7 +28,7 @@ return new class extends Migration
 
             $table->timestamps();
 
-            $table->unique(['user_id', 'pharmacy_id', 'is_active']); // 1 panier actif par pharmacie et par user
+            $table->unique(['client_id', 'pharmacy_id', 'is_active']); // 1 panier actif par pharmacie et par user
         });
     }
 

@@ -11,7 +11,7 @@ interface PaymentProps {
     items: {
       id: number;
       quantity: number;
-      price_at_addition: number | string; // peut venir en string depuis la DB
+      price_at_addition: number | string;
       product: {
         id: number;
         name: string;
@@ -22,11 +22,9 @@ interface PaymentProps {
 }
 
 export default function Payment({ cart }: PaymentProps) {
-  // Calcul du total en s'assurant que price_at_addition est un nombre
   const total =
     cart?.items.reduce(
-      (sum, item) =>
-        sum + Number(item.price_at_addition) * item.quantity,
+      (sum, item) => sum + Number(item.price_at_addition) * item.quantity,
       0
     ) ?? 0;
 
@@ -34,12 +32,20 @@ export default function Payment({ cart }: PaymentProps) {
     e.preventDefault();
     if (!cart) return;
 
-    router.post("/payment", {
-      cart_id: cart.id,
-      delivery_address: "Adresse du client",
-      delivery_latitude: 0,
-      delivery_longitude: 0,
-    });
+    router.post(
+      "/payment",
+      {
+        cart_id: cart.id,
+        delivery_address: "Adresse du client",
+        delivery_latitude: 0,
+        delivery_longitude: 0,
+      },
+      {
+        onSuccess: (page) => {
+          router.visit(`/order/confirmation/${page.props.order.id}`);
+        },
+      }
+    );
   };
 
   return (

@@ -11,14 +11,12 @@ use Illuminate\Support\Facades\Auth;
 class CartController extends Controller
 {
     /**
-     * Affiche tous les paniers de l'utilisateur avec les items
+     * Affiche tous les paniers du client avec les items
      */
     public function index()
     {
-        $user = Auth::user();
-
         $carts = Cart::with('items.product', 'pharmacy')
-                     ->where('user_id', $user->id)
+                     ->where('user_id', Auth::id())
                      ->get()
                      ->map(function ($cart) {
                          $cart->total_price = $cart->items->sum(fn($item) => $item->price_at_addition * $item->quantity);
@@ -39,18 +37,16 @@ class CartController extends Controller
             'pharmacy_id' => 'required|exists:pharmacies,id',
         ]);
 
-        $user = Auth::user();
         $product = Product::findOrFail($request->product_id);
-        $pharmacyId = $request->pharmacy_id;
 
-        // Récupère ou crée le panier pour cette pharmacie
+        // Récupère ou crée le panier pour ce client et cette pharmacie
         $cart = Cart::firstOrCreate(
-            ['user_id' => $user->id, 'pharmacy_id' => $pharmacyId]
+            ['user_id' => Auth::id(), 'pharmacy_id' => $request->pharmacy_id]
         );
 
         // Vérifie si le produit est déjà dans le panier
         $cartItem = CartItem::firstOrNew([
-            'cart_id'    => $cart->id,
+            'cart_id' => $cart->id,
             'product_id' => $product->id,
         ]);
 
@@ -62,7 +58,7 @@ class CartController extends Controller
     }
 
     /**
-     * Retire un produit d'un panier
+     * Retire un produit du panier
      */
     public function remove(Request $request)
     {
