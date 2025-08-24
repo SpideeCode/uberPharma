@@ -73,35 +73,44 @@ Route::middleware(['auth', 'verified'])->get('/dashboard', function () {
 // -----------------------------------------------------------------------------
 // Routes clients
 // -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+// Routes clients
+// -----------------------------------------------------------------------------
 Route::middleware(['auth', ClientPass::class])->group(function () {
-    // Commandes
-    Route::get('/orders', [OrderController::class, 'index']);
-    Route::get('/orders/create', [OrderController::class, 'create']);
-    Route::post('/orders', [OrderController::class, 'store']);
+    // Historique des commandes (ClientOrders.tsx)
+    Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
 
-    // Paiement
+    // Détail d'une commande (OrderDetail.tsx)
+    Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
+
+    // Création d'une commande (si besoin)
+    Route::get('/orders/create', [OrderController::class, 'create'])->name('orders.create');
+    Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
+
+    // Paiement (Payment.tsx)
     Route::get('/payment', [PaymentController::class, 'index'])->name('payment.index');
     Route::post('/payment', [PaymentController::class, 'store'])->name('payment.store');
 
-    // Confirmation commande
+    // Confirmation commande (OrderConfirmation.tsx)
     Route::get('/order/confirmation/{order}', [PaymentController::class, 'confirmation'])
         ->name('order.confirmation');
 
     // Livraison
-    Route::post('/deliveries/update-location', [DeliveryController::class, 'updateLocation']);
+    Route::post('/deliveries/update-location', [DeliveryController::class, 'updateLocation'])->name('deliveries.update');
 
     // Avis
-    Route::post('/reviews', [ReviewController::class, 'store']);
+    Route::post('/reviews', [ReviewController::class, 'store'])->name('reviews.store');
 
-    // Pharmacies
+    // Pharmacies (PharmacyDetail.tsx)
     Route::get('/pharmacies/{pharmacy}', [PharmacyController::class, 'show'])->name('pharmacies.show');
 
-    // Panier
+    // Panier (CartSidebar.tsx / Cart.tsx)
     Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
     Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
     Route::post('/cart/remove', [CartController::class, 'remove'])->name('cart.remove');
     Route::post('/cart/clear', [CartController::class, 'clear'])->name('cart.clear');
 });
+
 
 // -----------------------------------------------------------------------------
 // Routes pharmacies

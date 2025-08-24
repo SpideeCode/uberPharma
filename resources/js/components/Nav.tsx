@@ -13,7 +13,7 @@ export default function Nav() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2">
+          <Link href={route("home")} className="flex items-center gap-2">
             <div className="w-10 h-10 bg-green-100 text-green-700 flex items-center justify-center rounded-full font-bold text-lg">
               UP
             </div>
@@ -22,16 +22,16 @@ export default function Nav() {
 
           {/* Desktop Menu */}
           <nav className="hidden md:flex gap-4 items-center">
-            <Link href="/" className="hover:underline">
+            <Link href={route("home")} className="hover:underline">
               Accueil
             </Link>
 
             {auth?.role === "client" && (
               <>
-                <Link href="/my-orders" className="hover:underline">
+                <Link href={route("orders.index")} className="hover:underline">
                   Mes commandes
                 </Link>
-                <Link href="/pharmacies" className="hover:underline">
+                <Link href={route("pharmacies.show", 1)} className="hover:underline">
                   Pharmacies
                 </Link>
               </>
@@ -39,12 +39,13 @@ export default function Nav() {
 
             {auth?.role === "pharmacy" && (
               <>
-                <Link href={route('pharmacy.dashboard')}>Mon Dashboard</Link>
-
-                <Link href="/pharmacy/products" className="hover:underline">
+                <Link href={route("pharmacy.dashboard")} className="hover:underline">
+                  Mon Dashboard
+                </Link>
+                <Link href={route("pharmacy.products.index")} className="hover:underline">
                   Mes produits
                 </Link>
-                <Link href="/pharmacy/orders" className="hover:underline">
+                <Link href={route("orders.index")} className="hover:underline">
                   Commandes
                 </Link>
               </>
@@ -52,48 +53,47 @@ export default function Nav() {
 
             {auth?.role === "admin" && (
               <>
-                <Link href="/admin/dashboard" className="hover:underline">
+                <Link href={route("admin.dashboard")} className="hover:underline">
                   Admin Dashboard
                 </Link>
-                <Link href="/admin/users" className="hover:underline">
+                <Link href={route("admin.users")} className="hover:underline">
                   Utilisateurs
                 </Link>
-                <Link href="/admin/pharmacies" className="hover:underline">
+                <Link href={route("admin.pharmacies")} className="hover:underline">
                   Pharmacies
                 </Link>
-                <Link href="/admin/products" className="hover:underline">
+                <Link href={route("admin.products")} className="hover:underline">
                   Produits
                 </Link>
               </>
             )}
 
             {auth ? (
-  <div className="ml-4 flex items-center gap-2">
-    <span className="font-medium">Bonjour {auth.name}</span>
-    <button
-      onClick={() => router.post(route("logout"))}
-      className="px-3 py-1 bg-red-600 rounded hover:bg-red-700 transition"
-    >
-      Déconnexion
-    </button>
-  </div>
-) : (
-  <div className="ml-4 flex items-center gap-2">
-    <Link
-      href="/login"
-      className="px-3 py-1 bg-blue-600 rounded hover:bg-blue-700 transition"
-    >
-      Connexion
-    </Link>
-    <Link
-      href="/register"
-      className="px-3 py-1 bg-green-600 rounded hover:bg-green-700 transition"
-    >
-      Inscription
-    </Link>
-  </div>
-)}
-
+              <div className="ml-4 flex items-center gap-2">
+                <span className="font-medium">Bonjour {auth.name}</span>
+                <button
+                  onClick={() => router.post(route("logout"))}
+                  className="px-3 py-1 bg-red-600 rounded hover:bg-red-700 transition"
+                >
+                  Déconnexion
+                </button>
+              </div>
+            ) : (
+              <div className="ml-4 flex items-center gap-2">
+                <Link
+                  href={route("login")}
+                  className="px-3 py-1 bg-blue-600 rounded hover:bg-blue-700 transition"
+                >
+                  Connexion
+                </Link>
+                <Link
+                  href={route("register")}
+                  className="px-3 py-1 bg-green-600 rounded hover:bg-green-700 transition"
+                >
+                  Inscription
+                </Link>
+              </div>
+            )}
           </nav>
 
           {/* Mobile Menu Button */}
@@ -130,16 +130,16 @@ export default function Nav() {
       {/* Mobile Menu */}
       {menuOpen && (
         <nav className="md:hidden bg-green-700 px-4 pb-4 flex flex-col gap-2">
-          <Link href="/" className="hover:underline">
+          <Link href={route("home")} className="hover:underline">
             Accueil
           </Link>
 
           {auth?.role === "client" && (
             <>
-              <Link href="/my-orders" className="hover:underline">
+              <Link href={route("orders.index")} className="hover:underline">
                 Mes commandes
               </Link>
-              <Link href="/pharmacies" className="hover:underline">
+              <Link href={route("pharmacies.show", 1)} className="hover:underline">
                 Pharmacies
               </Link>
             </>
@@ -147,13 +147,13 @@ export default function Nav() {
 
           {auth?.role === "pharmacy" && (
             <>
-              <Link href="/pharmacy/dashboard" className="hover:underline">
+              <Link href={route("pharmacy.dashboard")} className="hover:underline">
                 Mon Dashboard
               </Link>
-              <Link href="/pharmacy/products" className="hover:underline">
+              <Link href={route("pharmacy.products.index")} className="hover:underline">
                 Mes produits
               </Link>
-              <Link href="/pharmacy/orders" className="hover:underline">
+              <Link href={route("orders.index")} className="hover:underline">
                 Commandes
               </Link>
             </>
@@ -161,16 +161,16 @@ export default function Nav() {
 
           {auth?.role === "admin" && (
             <>
-              <Link href="/admin/dashboard" className="hover:underline">
+              <Link href={route("admin.dashboard")} className="hover:underline">
                 Admin Dashboard
               </Link>
-              <Link href="/admin/users" className="hover:underline">
+              <Link href={route("admin.users")} className="hover:underline">
                 Utilisateurs
               </Link>
-              <Link href="/admin/pharmacies" className="hover:underline">
+              <Link href={route("admin.pharmacies")} className="hover:underline">
                 Pharmacies
               </Link>
-              <Link href="/admin/products" className="hover:underline">
+              <Link href={route("admin.products")} className="hover:underline">
                 Produits
               </Link>
             </>
@@ -189,13 +189,13 @@ export default function Nav() {
           ) : (
             <div className="ml-4 flex items-center gap-2">
               <Link
-                href="/login"
+                href={route("login")}
                 className="px-3 py-1 bg-blue-600 rounded hover:bg-blue-700 transition"
               >
                 Connexion
               </Link>
               <Link
-                href="/register"
+                href={route("register")}
                 className="px-3 py-1 bg-green-600 rounded hover:bg-green-700 transition"
               >
                 Inscription
