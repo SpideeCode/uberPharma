@@ -3,122 +3,66 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
-use App\Http\Requests\StoreOrderRequest;
-use App\Http\Requests\UpdateOrderRequest;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
 
 class OrderController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Liste les commandes selon le rôle de l'utilisateur
      */
     public function index()
     {
-        // Toutes les commandes du client connecté
-        $orders = Order::with('items.product', 'pharmacy')
-            ->where('user_id', Auth::id()) // ← ici
-            ->orderBy('created_at', 'desc')
-            ->get();
+        $user = Auth::user();
 
-        return Inertia::render('ClientOrders', [
+        if ($user->role === 'client') {
+            // Commandes du client
+            $orders = Order::with('items.product', 'pharmacy')
+                ->where('user_id', $user->id)
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            $component = 'ClientOrders';
+        } elseif ($user->role === 'pharmacy') {
+            // Commandes pour les pharmacies de l'utilisateur
+            $pharmacyIds = $user->pharmacies()->pluck('id');
+            $orders = Order::with('items.product', 'client')
+                ->whereIn('pharmacy_id', $pharmacyIds)
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            $component = 'PharmacyOrders';
+        } else {
+            $orders = collect(); // vide pour les autres rôles
+            $component = 'ClientOrders'; // par défaut
+        }
+
+        return Inertia::render($component, [
             'orders' => $orders,
         ]);
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Détail d'une commande
      */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StoreOrderRequest $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-
-
     public function show(Order $order)
     {
-        // Vérifie que la commande appartient bien au client
-        if ($order->user_id !== Auth::id()) { // ← ici
+        $user = Auth::user();
+
+        // Vérification d'accès
+        if ($user->role === 'client' && $order->user_id !== $user->id) {
             abort(403);
         }
 
-        $order->load('items.product', 'pharmacy');
+        if ($user->role === 'pharmacy' && !$user->pharmacies->contains($order->pharmacy_id)) {
+            abort(403);
+        }
+
+        $order->load('items.product', 'client', 'pharmacy');
 
         return Inertia::render('OrderDetail', [
             'order' => $order,
         ]);
     }
-
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Order $order)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateOrderRequest $request, Order $order)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Order $order)
-    {
-        //
-    }
-
-    /**
-     * Confirmation de commande après paiement.
-     */
-    public function confirmation($orderId)
-    {
-        $order = Order::with('items.product', 'pharmacy')->findOrFail($orderId);
-
-        return Inertia::render('OrderConfirmation', [
-            'order' => $order,
-        ]);
-    }
-
-
-    public function sendToPharmacy(Order $order)
-{
-    // Vérifie que le client est propriétaire de la commande
-    if ($order->user_id !== Auth::id()) {
-        abort(403);
-    }
-
-    // Vérifie que la commande n'est pas déjà envoyée
-    if ($order->status !== 'pending') {
-        return back()->with('error', 'Cette commande a déjà été envoyée.');
-    }
-
-    // Change le statut
-    $order->status = 'sent';
-    $order->save();
-
-    // Optionnel : notifier la pharmacie
-    // event(new OrderSentToPharmacy($order));
-
-    return back()->with('success', 'Commande envoyée à la pharmacie.');
-}
-
 }
