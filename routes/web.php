@@ -26,26 +26,29 @@ use App\Models\Order;
 use App\Models\Review;
 use App\Models\User;
 
+// -----------------------------------------------------------------------------
+// Admin Dashboard & Stats
+// -----------------------------------------------------------------------------
+Route::middleware(['auth', 'admin'])->group(function () {
+    Route::get('/admin/dashboard', function () {
+        return Inertia::render('AdminDashboard', [
+            'stats' => [
+                'users' => User::count(),
+                'pharmacies' => Pharmacy::count(),
+                'products' => Product::count(),
+                'orders' => Order::count(),
+                'reviews' => Review::count(),
+            ],
+        ]);
+    })->name('admin.dashboard');
 
-Route::get('/admin/dashboard', function () {
-    return Inertia::render('AdminDashboard', [
-        'stats' => [
-            'users' => User::count(),
-            'pharmacies' => Pharmacy::count(),
-            'products' => Product::count(),
-            'orders' => Order::count(),
-            'reviews' => Review::count(),
-        ],
-    ]);
-})->middleware(['auth', 'admin'])->name('admin.dashboard');
-
-Route::middleware(['auth', AdminPass::class])->group(function () {
     Route::get('/admin/users', [UserController::class, 'index'])->name('admin.users');
     Route::get('/admin/pharmacies', [PharmacyController::class, 'index'])->name('admin.pharmacies');
     Route::get('/admin/products', [ProductController::class, 'index'])->name('admin.products');
 });
+
 // -----------------------------------------------------------------------------
-// Page d'accueil : toutes les pharmacies et produits
+// Homepage
 // -----------------------------------------------------------------------------
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -68,19 +71,29 @@ Route::middleware(['auth', 'verified'])->get('/dashboard', function () {
 })->name('dashboard');
 
 // -----------------------------------------------------------------------------
-// Routes accessibles aux clients
-// -----------------------------------------------------------------------------
-// -----------------------------------------------------------------------------
-// Routes accessibles aux clients
+// Routes clients
 // -----------------------------------------------------------------------------
 Route::middleware(['auth', ClientPass::class])->group(function () {
     // Commandes
     Route::get('/orders', [OrderController::class, 'index']);
     Route::get('/orders/create', [OrderController::class, 'create']);
     Route::post('/orders', [OrderController::class, 'store']);
-    Route::post('/payments', [PaymentController::class, 'store']);
+
+    // Paiement
+    Route::get('/payment', [PaymentController::class, 'index'])->name('payment.index');
+    Route::post('/payment', [PaymentController::class, 'store'])->name('payment.store');
+
+    // Confirmation commande
+    Route::get('/order/confirmation/{order}', [PaymentController::class, 'confirmation'])
+        ->name('order.confirmation');
+
+    // Livraison
     Route::post('/deliveries/update-location', [DeliveryController::class, 'updateLocation']);
+
+    // Avis
     Route::post('/reviews', [ReviewController::class, 'store']);
+
+    // Pharmacies
     Route::get('/pharmacies/{pharmacy}', [PharmacyController::class, 'show'])->name('pharmacies.show');
 
     // Panier
@@ -90,12 +103,11 @@ Route::middleware(['auth', ClientPass::class])->group(function () {
     Route::post('/cart/clear', [CartController::class, 'clear'])->name('cart.clear');
 });
 
-
 // -----------------------------------------------------------------------------
-// Routes accessibles aux pharmacies (Client + Pharmacy)
+// Routes pharmacies
 // -----------------------------------------------------------------------------
 Route::middleware(['auth', PharmacyPass::class])->group(function () {
-    // Pharmacies
+    // Gestion des pharmacies
     Route::get('/pharmacies', [PharmacyController::class, 'index'])->name('pharmacies.index');
     Route::get('/pharmacies/create', [PharmacyController::class, 'create'])->name('pharmacies.create');
     Route::post('/pharmacies', [PharmacyController::class, 'store'])->name('pharmacies.store');
@@ -104,7 +116,7 @@ Route::middleware(['auth', PharmacyPass::class])->group(function () {
     Route::delete('/pharmacies/{pharmacy}', [PharmacyController::class, 'destroy'])->name('pharmacies.destroy');
     Route::get('/mes-pharmacies', [PharmacyController::class, 'myPharmacies'])->name('pharmacies.my');
 
-    // Produits
+    // Gestion produits
     Route::get('/pharmacies/{pharmacy}/products', [ProductController::class, 'index'])->name('products.index');
     Route::get('/products/create', [ProductController::class, 'create'])->name('products.create');
     Route::post('/products', [ProductController::class, 'store'])->name('products.store');
@@ -114,20 +126,9 @@ Route::middleware(['auth', PharmacyPass::class])->group(function () {
 });
 
 // -----------------------------------------------------------------------------
-// Routes accessibles uniquement aux administrateurs (Pharmacy + Admin)
+// Routes admin
 // -----------------------------------------------------------------------------
 Route::middleware(['auth', AdminPass::class])->group(function () {
-    Route::get('/admin/dashboard', function () {
-        return Inertia::render('AdminDashboard', [
-            'stats' => [
-                'users' => \App\Models\User::count(),
-                'pharmacies' => Pharmacy::count(),
-                'products' => Product::count(),
-            ]
-        ]);
-    })->name('admin.dashboard');
-
-    // Gestion des utilisateurs
     Route::get('/users', function () {
         return Inertia::render('Users', [
             'users' => \App\Models\User::all(),
@@ -156,10 +157,8 @@ Route::middleware(['auth', AdminPass::class])->group(function () {
         $request->validate([
             'role' => 'required|in:client,pharmacy,admin',
         ]);
-
         $user->role = $request->role;
         $user->save();
-
         return redirect()->back();
     });
 
@@ -169,46 +168,21 @@ Route::middleware(['auth', AdminPass::class])->group(function () {
     });
 });
 
-
+// -----------------------------------------------------------------------------
+// Dashboard pharmacie
+// -----------------------------------------------------------------------------
 Route::middleware(['auth', PharmacyPass::class])
     ->prefix('pharmacy')
     ->name('pharmacy.')
     ->group(function () {
-        Route::get('/dashboard', [PharmacyDashboardController::class, 'index'])
-            ->name('dashboard');
-    });
+        Route::get('/dashboard', [PharmacyDashboardController::class, 'index'])->name('dashboard');
 
-
-Route::middleware(['auth', PharmacyPass::class])
-    ->prefix('pharmacy')
-    ->name('pharmacy.')
-    ->group(function () {
-        // Page de gestion des produits pour le pharmacien
         Route::get('/products', [PharmacyProductController::class, 'index'])->name('products.index');
         Route::post('/products', [PharmacyProductController::class, 'store'])->name('products.store');
         Route::get('/products/{product}/edit', [PharmacyProductController::class, 'edit'])->name('products.edit');
         Route::put('/products/{product}', [PharmacyProductController::class, 'update'])->name('products.update');
         Route::delete('/products/{product}', [PharmacyProductController::class, 'destroy'])->name('products.destroy');
     });
-
-
-
-Route::middleware(['auth'])->group(function () {
-Route::get('/payment', [PaymentController::class, 'index'])->name('payment.index');
-});
-
-
-
-
-Route::post('/payment', [PaymentController::class, 'store'])->name('payment.store');
-
-// Route::get('/orders/{order}/confirmation', [OrderController::class, 'confirmation'])
-//     ->name('orders.confirmation');
-
-
-
-Route::get('/order/confirmation/{order}', [PaymentController::class, 'confirmation'])
-     ->name('order.confirmation');
 
 // -----------------------------------------------------------------------------
 // Logout

@@ -1,7 +1,6 @@
 import { router } from "@inertiajs/react";
 import { Link } from "@inertiajs/react";
 
-
 interface CartSidebarProps {
   isOpen: boolean;
   toggle: () => void;
@@ -102,7 +101,7 @@ export default function CartSidebar({
           Vider le panier
         </button>
         <Link
-          href={route("payment.index")}
+          href={route("payment.index", { cart_id: cart?.id })}
           className="block w-full text-center rounded bg-green-600 py-2 text-white hover:bg-green-700"
         >
           Passer commande

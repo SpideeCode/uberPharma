@@ -10,13 +10,21 @@ return new class extends Migration
     {
         Schema::create('cart_items', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('cart_id')->constrained('carts')->onDelete('cascade'); // lien vers le panier
-            $table->foreignId('product_id')->constrained()->onDelete('cascade'); // lien vers le produit
+            $table->foreignId('cart_id')->constrained('carts')->onDelete('cascade');
+            $table->foreignId('product_id')->constrained()->onDelete('cascade');
+
+            // Sauvegarde au moment de l’ajout
+            $table->string('product_name')->nullable();
+            $table->decimal('price_at_addition', 10, 2);
             $table->integer('quantity')->default(1);
-            $table->decimal('price_at_addition', 10, 2); // prix stocké au moment de l'ajout
+            $table->decimal('line_total', 10, 2)->default(0);
+
+            // Extra infos (par ex : dosage, pack, options…)
+            $table->json('meta')->nullable();
+
             $table->timestamps();
 
-            $table->unique(['cart_id', 'product_id']); // un produit par panier unique
+            $table->unique(['cart_id', 'product_id']); // pas 2x le même produit dans un panier
         });
     }
 

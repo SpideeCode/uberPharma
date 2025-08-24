@@ -1,51 +1,76 @@
 import Nav from "@/components/Nav";
 
 interface OrderConfirmationProps {
-    order: {
-        id: number;
-        total_price: number;
-        items: {
-            id: number;
-            quantity: number;
-            product: {
-                id: number;
-                name: string;
-                price: number;
-            };
-        }[];
+  order: {
+    id: number;
+    pharmacy?: {
+      name?: string;
     };
-    estimatedMinutes: number;
+    items: {
+      id: number;
+      product?: {
+        name?: string;
+      };
+      quantity: number;
+      price: number;
+    }[];
+  };
+  estimatedMinutes?: number;
 }
 
-export default function OrderConfirmation({ order, estimatedMinutes }: OrderConfirmationProps) {
-    if (!order || !order.items) return <p>Commande introuvable</p>;
+export default function OrderConfirmation({
+  order,
+  estimatedMinutes = 30,
+}: OrderConfirmationProps) {
+  const totalPrice = order.items.reduce(
+    (sum, item) => sum + Number(item.price) * item.quantity,
+    0
+  );
 
-    return (
-        <div>
-            <Nav />
-        
-        <div className="max-w-2xl mx-auto py-10">
-            <h1 className="text-2xl font-bold mb-6 text-green-700">Commande confirmée</h1>
+  return (
+    <div>
+      <Nav />
 
-            <h2 className="text-lg font-semibold mb-4">Votre commande :</h2>
-            {order.items.length > 0 ? (
-                order.items.map(item => (
-                    <div key={item.id} className="flex justify-between border-b pb-2">
-                        <span>{item.product.name} x {item.quantity}</span>
-                        <span>{(item.product.price * item.quantity).toFixed(2)} €</span>
-                    </div>
-                ))
-            ) : (
-                <p>Aucun produit dans cette commande.</p>
-            )}
+      <div className="max-w-2xl mx-auto py-10">
+        <h1 className="text-2xl font-bold mb-4 text-green-700">
+          Confirmation de commande
+        </h1>
 
-            <div className="mt-4 font-bold flex justify-between">
-                <span>Total estimé :</span>
-                <span>{Number(order.total_price).toFixed(2)} €</span>
-            </div>
+        <p className="mb-2">
+          Pharmacie : {order.pharmacy?.name || "Inconnue"}
+        </p>
+        <p className="mb-6">Livraison estimée : {estimatedMinutes} minutes</p>
 
-            <p className="mt-2">Temps estimé de livraison : {estimatedMinutes} minutes</p>
+        <div className="space-y-4">
+          {order.items.length > 0 ? (
+            order.items.map((item) => (
+              <div
+                key={item.id}
+                className="flex justify-between border-b pb-2"
+              >
+                <div>
+                  <p className="font-semibold">
+                    {item.product?.name || "Produit inconnu"}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    {item.quantity} × {Number(item.price).toFixed(2)} €
+                  </p>
+                </div>
+                <p className="font-semibold">
+                  {(Number(item.price) * item.quantity).toFixed(2)} €
+                </p>
+              </div>
+            ))
+          ) : (
+            <p className="text-gray-500">Aucun produit dans cette commande.</p>
+          )}
         </div>
+
+        <div className="flex justify-between mt-6 text-lg font-bold">
+          <span>Total :</span>
+          <span>{totalPrice.toFixed(2)} €</span>
         </div>
-    );
+      </div>
+    </div>
+  );
 }

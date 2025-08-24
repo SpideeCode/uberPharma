@@ -11,21 +11,25 @@ use Illuminate\Support\Facades\Auth;
 class CartController extends Controller
 {
     /**
-     * Affiche le panier pour l'utilisateur connecté
+     * Affiche tous les paniers de l'utilisateur avec les items
      */
     public function index()
     {
         $user = Auth::user();
-        // Récupère tous les paniers de l'utilisateur avec items et produits
+
         $carts = Cart::with('items.product', 'pharmacy')
                      ->where('user_id', $user->id)
-                     ->get();
+                     ->get()
+                     ->map(function ($cart) {
+                         $cart->total_price = $cart->items->sum(fn($item) => $item->price_at_addition * $item->quantity);
+                         return $cart;
+                     });
 
         return inertia('Cart', ['carts' => $carts]);
     }
 
     /**
-     * Ajoute un produit au panier
+     * Ajoute un produit au panier d'une pharmacie
      */
     public function add(Request $request)
     {
@@ -58,7 +62,7 @@ class CartController extends Controller
     }
 
     /**
-     * Retire un produit du panier
+     * Retire un produit d'un panier
      */
     public function remove(Request $request)
     {
@@ -73,7 +77,7 @@ class CartController extends Controller
     }
 
     /**
-     * Vide complètement un panier (par pharmacie)
+     * Vide complètement un panier par pharmacie
      */
     public function clear(Request $request)
     {
