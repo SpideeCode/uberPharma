@@ -10,7 +10,9 @@ class Product extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'price', 'stock', 'pharmacy_id'];
+    protected $fillable = ['name', 'price', 'stock', 'pharmacy_id', 'category_id', 'image'];
+    
+    protected $appends = ['image_url'];
 
     public function pharmacy()
     {
@@ -20,5 +22,15 @@ class Product extends Model
     public function orderItems()
     {
         return $this->hasMany(OrderItem::class);
+    }
+    
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
+    }
+    
+    public function getImageUrlAttribute()
+    {
+        return $this->image ? asset('storage/' . $this->image) : null;
     }
 }
