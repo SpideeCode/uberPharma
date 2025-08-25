@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use App\Models\Pharmacy;
 use App\Models\Product;
 use App\Models\Order;
@@ -59,52 +60,9 @@ class AdminDashboardController extends Controller
             ],
         ];
 
-        // --- Commandes récentes avec statuts détaillés
-        $recentOrders = Order::with(['client', 'pharmacy', 'courier'])
-            ->withCount('items')
-            ->latest()
-            ->take(5)
-            ->get()
-            ->map(function ($order) {
-                // Définition des statuts avec couleurs et libellés
-                $statusConfig = [
-                    'pending' => ['label' => 'En attente', 'color' => 'bg-yellow-100 text-yellow-800'],
-                    'accepted' => ['label' => 'Acceptée', 'color' => 'bg-blue-100 text-blue-800'],
-                    'in_delivery' => ['label' => 'En livraison', 'color' => 'bg-indigo-100 text-indigo-800'],
-                    'delivered' => ['label' => 'Livrée', 'color' => 'bg-green-100 text-green-800'],
-                    'cancelled' => ['label' => 'Annulée', 'color' => 'bg-red-100 text-red-800'],
-                ][$order->status] ?? ['label' => ucfirst($order->status), 'color' => 'bg-gray-100 text-gray-800'];
-
-                return [
-                    'id' => $order->id,
-                    'user' => [
-                        'name' => $order->client ? $order->client->name : 'Utilisateur inconnu',
-                        'email' => $order->client ? $order->client->email : null,
-                    ],
-                    'pharmacy' => $order->pharmacy ? [
-                        'name' => $order->pharmacy->name,
-                        'id' => $order->pharmacy->id,
-                    ] : null,
-                    'courier' => $order->courier ? [
-                        'name' => $order->courier->name,
-                        'id' => $order->courier->id,
-                    ] : null,
-                    'total' => number_format($order->total_price, 2, ',', ' ') . ' €',
-                    'status' => [
-                        'value' => $order->status,
-                        'label' => $statusConfig['label'],
-                        'color' => $statusConfig['color'],
-                    ],
-                    'items_count' => $order->items_count,
-                    'created_at' => [
-                        'formatted' => $order->created_at->format('d/m/Y H:i'),
-                        'diff' => $order->created_at->diffForHumans(),
-                        'raw' => $order->created_at,
-                    ],
-                    'delivery_address' => $order->delivery_address,
-                ];
-            });
-
+        // --- Récupération des commandes récentes
+        $recentOrders = $this->getRecentOrders(5);
+        
         // --- Meilleures pharmacies
         $topPharmacies = Pharmacy::withCount('orders')
             ->withSum('orders', 'total_price')
@@ -127,7 +85,7 @@ class AdminDashboardController extends Controller
         $revenueStats = $this->getRevenueStats();
 
         // --- Produits les plus vendus
-        $topProducts = $this->getTopProducts();
+        $topProducts = $this->getTopProducts(5);
 
         return Inertia::render('AdminDashboard', [
             'stats' => $stats,
@@ -213,28 +171,24 @@ class AdminDashboardController extends Controller
             ? round((($currentTotal - $previousTotal) / $previousTotal) * 100, 1)
             : 100;
         
-        return [
-            'labels' => $dates->map(fn($date) => \Carbon\Carbon::parse($date)->format('d M')),
-            'datasets' => collect($statuses)->map(function($data, $status) {
-                return [
-                    'label' => $data['label'],
-                    'data' => $data['data'],
-                    'borderColor' => $data['color'],
-                    'backgroundColor' => $data['color'].'20', // 20% d'opacité
-                    'borderWidth' => 2,
-                    'tension' => 0.3,
-                    'fill' => true,
-                ];
-            })->values()->toArray(),
-            'summary' => [
-                'total' => $currentTotal,
-                'change' => [
-                    'value' => abs($currentTotal - $previousTotal),
-                    'percentage' => abs($percentageChange),
-                    'trend' => $currentTotal >= $previousTotal ? 'up' : 'down',
-                ],
-            ],
-        ];
+        // Format des données pour Recharts
+        $formattedData = [];
+        
+        // Pour chaque jour, on crée un objet avec les données de chaque statut
+        foreach ($dates as $index => $date) {
+            $dayData = [
+                'date' => \Carbon\Carbon::parse($date)->format('d M'),
+                'name' => \Carbon\Carbon::parse($date)->format('d M'),
+            ];
+            
+            foreach ($statuses as $status => $statusData) {
+                $dayData[$statusData['label']] = $statusData['data'][$index] ?? 0;
+            }
+            
+            $formattedData[] = $dayData;
+        }
+        
+        return $formattedData;
     }
 
     /**
@@ -316,19 +270,18 @@ class AdminDashboardController extends Controller
             ]
         ];
         
-        return [
-            'daily' => $dates,
-            'summary' => [
-                'current_period' => $currentPeriodRevenue,
-                'previous_period' => $previousPeriodRevenue,
-                'change' => [
-                    'value' => abs($currentPeriodRevenue - $previousPeriodRevenue),
-                    'percentage' => abs($revenueChange),
-                    'trend' => $currentPeriodRevenue >= $previousPeriodRevenue ? 'up' : 'down',
-                ],
-            ],
-            'by_status' => array_values($revenueByStatus)
-        ];
+        // Format des données pour Recharts
+        $formattedData = [];
+        
+        foreach ($dates as $day) {
+            $formattedData[] = [
+                'date' => $day['formatted_date'],
+                'name' => $day['formatted_date'],
+                'Revenu' => $day['revenue'],
+            ];
+        }
+        
+        return $formattedData;
     }
 
     /**
@@ -341,44 +294,84 @@ class AdminDashboardController extends Controller
             'completed_orders' => $pharmacy->orders()->where('status', 'completed')->count(),
             'pending_orders' => $pharmacy->orders()->where('status', 'pending')->count(),
             'total_revenue' => $pharmacy->orders()->where('status', 'completed')->sum('total_price'),
-            'products_count' => $pharmacy->products()->count(),
-            'out_of_stock' => $pharmacy->products()->where('stock', '<=', 0)->count(),
         ];
-
-        // Graphique des commandes des 6 derniers mois
-        $orderStats = collect();
-        $now = now();
-
-        for ($i = 5; $i >= 0; $i--) {
-            $date = $now->copy()->subMonths($i);
-            $orderStats->push([
-                'month' => $date->format('M Y'),
-                'orders' => $pharmacy->orders()
-                    ->whereYear('created_at', $date->year)
-                    ->whereMonth('created_at', $date->month)
-                    ->count(),
-            ]);
-        }
-
-        // Produits les plus vendus
-        $topProducts = $pharmacy->products()
-            ->withCount('orderItems')
-            ->orderBy('order_items_count', 'desc')
-            ->take(5)
+        
+        return $stats;
+    }
+    
+    /**
+     * Récupère les produits les plus vendus
+     */
+    private function getTopProducts($limit = 5)
+    {
+        return Product::select('products.*')
+            ->withCount(['orderItems as sales_count' => function($query) {
+                $query->select(DB::raw('COALESCE(SUM(quantity), 0)'));
+            }])
+            ->withSum(['orderItems as revenue' => function($query) {
+                $query->select(DB::raw('COALESCE(SUM(quantity * price), 0)'));
+            }], 'quantity * price')
+            ->with(['pharmacy' => function($query) {
+                $query->select('id', 'name');
+            }])
+            ->whereHas('orderItems')
+            ->orderBy('sales_count', 'desc')
+            ->limit($limit)
             ->get()
             ->map(function ($product) {
                 return [
                     'id' => $product->id,
                     'name' => $product->name,
-                    'sales' => $product->order_items_count,
-                    'revenue' => $product->orderItems()->sum('price') * $product->orderItems()->sum('quantity'),
+                    'pharmacy_name' => $product->pharmacy ? $product->pharmacy->name : 'N/A',
+                    'pharmacy_id' => $product->pharmacy_id,
+                    'image' => $product->image_url,
+                    'sales' => (int)$product->sales_count,
+                    'revenue' => (float)$product->revenue,
+                    'revenue_formatted' => number_format($product->revenue, 2, ',', ' ') . ' €',
+                    'stock' => $product->stock,
+                    'stock_status' => $product->stock > 10 ? 'En stock' : ($product->stock > 0 ? 'Stock faible' : 'Rupture'),
+                    'stock_class' => $product->stock > 10 ? 'text-green-600' : ($product->stock > 0 ? 'text-yellow-600' : 'text-red-600'),
                 ];
             });
+    }
+    
+    /**
+     * Récupère les commandes récentes
+     */
+    private function getRecentOrders($limit = 5)
+    {
+        return Order::with(['client', 'pharmacy', 'items.product'])
+            ->latest()
+            ->limit($limit)
+            ->get()
+            ->map(function ($order) {
+                $statusConfig = [
+                    'pending' => ['label' => 'En attente', 'color' => 'bg-yellow-100 text-yellow-800'],
+                    'accepted' => ['label' => 'Acceptée', 'color' => 'bg-blue-100 text-blue-800'],
+                    'in_delivery' => ['label' => 'En livraison', 'color' => 'bg-indigo-100 text-indigo-800'],
+                    'delivered' => ['label' => 'Livrée', 'color' => 'bg-green-100 text-green-800'],
+                    'cancelled' => ['label' => 'Annulée', 'color' => 'bg-red-100 text-red-800'],
+                ][$order->status] ?? ['label' => ucfirst($order->status), 'color' => 'bg-gray-100 text-gray-800'];
 
-        return response()->json([
-            'stats' => $stats,
-            'orderStats' => $orderStats,
-            'topProducts' => $topProducts,
-        ]);
+                return [
+                    'id' => $order->id,
+                    'client_name' => $order->client ? $order->client->name : 'Client inconnu',
+                    'client_email' => $order->client ? $order->client->email : null,
+                    'pharmacy_name' => $order->pharmacy ? $order->pharmacy->name : 'Pharmacie inconnue',
+                    'pharmacy_id' => $order->pharmacy ? $order->pharmacy->id : null,
+                    'total' => (float)$order->total_price,
+                    'total_formatted' => number_format($order->total_price, 2, ',', ' ') . ' €',
+                    'status_value' => $order->status,
+                    'status_label' => $statusConfig['label'],
+                    'status_color' => $statusConfig['color'],
+                    'items_count' => $order->items->count(),
+                    'created_at' => [
+                        'formatted' => $order->created_at->format('d/m/Y H:i'),
+                        'diff' => $order->created_at->diffForHumans(),
+                        'raw' => $order->created_at->toDateTimeString(),
+                    ],
+                    'delivery_address' => $order->delivery_address,
+                ];
+            });
     }
 }

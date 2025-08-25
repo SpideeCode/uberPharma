@@ -16,11 +16,22 @@ interface StatCardProps {
 
 interface Order {
   id: number;
-  client: string;
-  pharmacy: string;
+  client_name: string;
+  client_email: string | null;
+  pharmacy_name: string;
+  pharmacy_id: number | null;
   total: number;
-  status: string;
-  date: string;
+  total_formatted: string;
+  status_value: string;
+  status_label: string;
+  status_color: string;
+  items_count: number;
+  created_at: {
+    formatted: string;
+    diff: string;
+    raw: string;
+  };
+  delivery_address: string | null;
 }
 
 export default function AdminDashboard() {
@@ -35,17 +46,10 @@ export default function AdminDashboard() {
 
   const { auth } = usePage<SharedData>().props;
 
-  const renderStatusBadge = (status: string) => {
-    const statusClasses = {
-      completed: 'bg-green-100 text-green-800',
-      pending: 'bg-yellow-100 text-yellow-800',
-      cancelled: 'bg-red-100 text-red-800',
-      processing: 'bg-blue-100 text-blue-800',
-    };
-
+  const renderStatusBadge = (order: Order) => {
     return (
-      <span className={`px-2 py-1 text-xs font-medium rounded-full ${statusClasses[status as keyof typeof statusClasses] || 'bg-gray-100 text-gray-800'}`}>
-        {status}
+      <span className={`px-2 py-1 text-xs font-medium rounded-full ${order.status_color}`}>
+        {order.status_label}
       </span>
     );
   };
@@ -107,11 +111,15 @@ export default function AdminDashboard() {
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={orderStats}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis dataKey="month" />
+                  <XAxis dataKey="name" />
                   <YAxis />
                   <Tooltip />
                   <Legend />
-                  <Line type="monotone" dataKey="orders" stroke="#3B82F6" strokeWidth={2} name="Commandes" />
+                  <Line type="monotone" dataKey="En attente" stroke="#F59E0B" strokeWidth={2} name="En attente" />
+                  <Line type="monotone" dataKey="Acceptées" stroke="#3B82F6" strokeWidth={2} name="Acceptées" />
+                  <Line type="monotone" dataKey="En livraison" stroke="#8B5CF6" strokeWidth={2} name="En livraison" />
+                  <Line type="monotone" dataKey="Livrées" stroke="#10B981" strokeWidth={2} name="Livrées" />
+                  <Line type="monotone" dataKey="Annulées" stroke="#EF4444" strokeWidth={2} name="Annulées" />
                 </LineChart>
               </ResponsiveContainer>
             </div>
@@ -124,11 +132,17 @@ export default function AdminDashboard() {
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={revenueStats}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis dataKey="month" />
+                  <XAxis dataKey="name" />
                   <YAxis />
-                  <Tooltip formatter={(value: any) => [formatCurrency(Number(value)), 'Revenu']} />
+                  <Tooltip 
+                    formatter={(value: any) => [
+                      new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(Number(value)), 
+                      'Revenu'
+                    ]} 
+                    labelFormatter={(label) => `Date: ${label}`}
+                  />
                   <Legend />
-                  <Bar dataKey="revenue" fill="#10B981" name="Revenu" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="Revenu" fill="#10B981" name="Revenu" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -160,15 +174,30 @@ export default function AdminDashboard() {
                 <tbody className="bg-white divide-y divide-gray-200">
                   {recentOrders.map((order) => (
                     <tr key={order.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">#{order.id}</td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">{order.client}</td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">{order.pharmacy}</td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">{formatCurrency(order.total)}</td>
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        {renderStatusBadge(order.status)}
+                      <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
+                        <Link href={route('admin.orders.show', { order: order.id })} className="text-blue-600 hover:underline">
+                          #{order.id}
+                        </Link>
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-                        {new Date(order.date).toLocaleString('fr-FR')}
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <div className="text-sm font-medium text-gray-900">{order.client_name}</div>
+                        {order.client_email && (
+                          <div className="text-xs text-gray-500">{order.client_email}</div>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <div className="text-sm text-gray-900">{order.pharmacy_name}</div>
+                        <div className="text-xs text-gray-500">{order.items_count} article{order.items_count > 1 ? 's' : ''}</div>
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
+                        {order.total_formatted}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        {renderStatusBadge(order)}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <div className="text-sm text-gray-900">{order.created_at.formatted}</div>
+                        <div className="text-xs text-gray-500">{order.created_at.diff}</div>
                       </td>
                     </tr>
                   ))}
@@ -210,12 +239,15 @@ export default function AdminDashboard() {
                       <span className="text-sm font-medium text-gray-500">{index + 1}.</span>
                       <div>
                         <p className="text-sm font-medium text-gray-900">{product.name}</p>
-                        <p className="text-xs text-gray-500">{product.pharmacy}</p>
+                        <p className="text-xs text-gray-500">{product.pharmacy_name}</p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm font-medium text-gray-900">{product.sales} ventes</p>
-                      <p className="text-xs text-gray-500">{formatCurrency(product.revenue)}</p>
+                      <p className="text-sm font-medium text-gray-900">{product.sales} vente{product.sales > 1 ? 's' : ''}</p>
+                      <p className={`text-xs ${product.stock_class}`}>
+                        {product.stock_status} • {product.stock} unité{product.stock > 1 ? 's' : ''}
+                      </p>
+                      <p className="text-xs font-medium text-gray-900">{product.revenue_formatted}</p>
                     </div>
                   </div>
                 ))}

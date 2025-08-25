@@ -48,6 +48,7 @@ Route::middleware(['auth', AdminPass::class])->group(function () {
     
     // Gestion des commandes
     Route::get('/admin/orders', [OrderController::class, 'adminIndex'])->name('admin.orders');
+    Route::get('/admin/orders/{order}', [OrderController::class, 'adminShow'])->name('admin.orders.show');
 });
 
 // -----------------------------------------------------------------------------
