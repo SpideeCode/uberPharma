@@ -29,7 +29,7 @@ use App\Models\User;
 // -----------------------------------------------------------------------------
 // Admin Dashboard & Stats
 // -----------------------------------------------------------------------------
-Route::middleware(['auth', 'admin'])->group(function () {
+Route::middleware(['auth', AdminPass::class])->group(function () {
     Route::get('/admin/dashboard', function () {
         return Inertia::render('AdminDashboard', [
             'stats' => [

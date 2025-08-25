@@ -31,7 +31,10 @@ export default function Nav() {
                 <Link href={route("orders.index")} className="hover:underline">
                   Mes commandes
                 </Link>
-                <Link href={route("pharmacies.show", 1)} className="hover:underline">
+                <Link
+                  href={route("pharmacies.show", 1)}
+                  className="hover:underline"
+                >
                   Pharmacies
                 </Link>
               </>
@@ -39,10 +42,16 @@ export default function Nav() {
 
             {auth?.role === "pharmacy" && (
               <>
-                <Link href={route("pharmacy.dashboard")} className="hover:underline">
+                <Link
+                  href={route("pharmacy.dashboard")}
+                  className="hover:underline"
+                >
                   Mon Dashboard
                 </Link>
-                <Link href={route("pharmacy.products.index")} className="hover:underline">
+                <Link
+                  href={route("pharmacy.products.index")}
+                  className="hover:underline"
+                >
                   Mes produits
                 </Link>
                 <Link href={route("orders.index")} className="hover:underline">
@@ -53,16 +62,25 @@ export default function Nav() {
 
             {auth?.role === "admin" && (
               <>
-                <Link href={route("admin.dashboard")} className="hover:underline">
+                <Link
+                  href={route("admin.dashboard")}
+                  className="hover:underline"
+                >
                   Admin Dashboard
                 </Link>
                 <Link href={route("admin.users")} className="hover:underline">
                   Utilisateurs
                 </Link>
-                <Link href={route("admin.pharmacies")} className="hover:underline">
+                <Link
+                  href={route("admin.pharmacies")}
+                  className="hover:underline"
+                >
                   Pharmacies
                 </Link>
-                <Link href={route("admin.products")} className="hover:underline">
+                <Link
+                  href={route("admin.products")}
+                  className="hover:underline"
+                >
                   Produits
                 </Link>
               </>
@@ -139,7 +157,10 @@ export default function Nav() {
               <Link href={route("orders.index")} className="hover:underline">
                 Mes commandes
               </Link>
-              <Link href={route("pharmacies.show", 1)} className="hover:underline">
+              <Link
+                href={route("pharmacies.show", 1)}
+                className="hover:underline"
+              >
                 Pharmacies
               </Link>
             </>
@@ -147,10 +168,16 @@ export default function Nav() {
 
           {auth?.role === "pharmacy" && (
             <>
-              <Link href={route("pharmacy.dashboard")} className="hover:underline">
+              <Link
+                href={route("pharmacy.dashboard")}
+                className="hover:underline"
+              >
                 Mon Dashboard
               </Link>
-              <Link href={route("pharmacy.products.index")} className="hover:underline">
+              <Link
+                href={route("pharmacy.products.index")}
+                className="hover:underline"
+              >
                 Mes produits
               </Link>
               <Link href={route("orders.index")} className="hover:underline">
@@ -167,7 +194,10 @@ export default function Nav() {
               <Link href={route("admin.users")} className="hover:underline">
                 Utilisateurs
               </Link>
-              <Link href={route("admin.pharmacies")} className="hover:underline">
+              <Link
+                href={route("admin.pharmacies")}
+                className="hover:underline"
+              >
                 Pharmacies
               </Link>
               <Link href={route("admin.products")} className="hover:underline">
