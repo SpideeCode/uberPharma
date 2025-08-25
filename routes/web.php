@@ -30,21 +30,24 @@ use App\Models\User;
 // Admin Dashboard & Stats
 // -----------------------------------------------------------------------------
 Route::middleware(['auth', AdminPass::class])->group(function () {
-    Route::get('/admin/dashboard', function () {
-        return Inertia::render('AdminDashboard', [
-            'stats' => [
-                'users' => User::count(),
-                'pharmacies' => Pharmacy::count(),
-                'products' => Product::count(),
-                'orders' => Order::count(),
-                'reviews' => Review::count(),
-            ],
-        ]);
-    })->name('admin.dashboard');
+    // Tableau de bord admin
+    Route::get('/admin/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
+    
+    // Statistiques d'une pharmacie spécifique
+    Route::get('/admin/pharmacies/{pharmacy}/stats', [AdminDashboardController::class, 'getPharmacyStats'])
+        ->name('admin.pharmacies.stats');
 
+    // Gestion des utilisateurs
     Route::get('/admin/users', [UserController::class, 'index'])->name('admin.users');
+    
+    // Gestion des pharmacies
     Route::get('/admin/pharmacies', [PharmacyController::class, 'index'])->name('admin.pharmacies');
+    
+    // Gestion des produits
     Route::get('/admin/products', [ProductController::class, 'index'])->name('admin.products');
+    
+    // Gestion des commandes
+    Route::get('/admin/orders', [OrderController::class, 'adminIndex'])->name('admin.orders');
 });
 
 // -----------------------------------------------------------------------------

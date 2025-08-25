@@ -46,6 +46,23 @@ class OrderController extends Controller
     /**
      * Détail d'une commande
      */
+    /**
+     * Affiche la liste des commandes pour l'administration
+     */
+    public function adminIndex()
+    {
+        $orders = Order::with(['client', 'pharmacy', 'items.product'])
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+
+        return Inertia::render('Admin/Orders', [
+            'orders' => $orders,
+        ]);
+    }
+
+    /**
+     * Détail d'une commande
+     */
     public function show(Order $order)
     {
         $user = Auth::user();
