@@ -30,22 +30,27 @@ function StatCard({ title, value, icon: Icon, change, changeType = 'up' }: { tit
 }
 
 // Composant de badge de statut
-function StatusBadge({ status }: { status: string }) {
+function StatusBadge({ status, label, color }: { status: string; label?: string; color?: string }) {
   const statusConfig = {
     pending: {
       bg: 'bg-yellow-100',
       text: 'text-yellow-800',
       label: 'En attente'
     },
-    processing: {
+    accepted: {
       bg: 'bg-blue-100',
       text: 'text-blue-800',
-      label: 'En cours'
+      label: 'Acceptée'
     },
-    completed: {
+    in_delivery: {
+      bg: 'bg-indigo-100',
+      text: 'text-indigo-800',
+      label: 'En livraison'
+    },
+    delivered: {
       bg: 'bg-green-100',
       text: 'text-green-800',
-      label: 'Terminée'
+      label: 'Livrée'
     },
     cancelled: {
       bg: 'bg-red-100',
@@ -54,7 +59,11 @@ function StatusBadge({ status }: { status: string }) {
     }
   };
 
-  const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
+  const config = statusConfig[status as keyof typeof statusConfig] || {
+    bg: color || 'bg-gray-100',
+    text: 'text-gray-800',
+    label: label || status
+  };
   
   return (
     <span className={`px-2 py-1 text-xs font-medium rounded-full ${config.bg} ${config.text}`}>
@@ -179,13 +188,18 @@ export default function PharmacyDashboard({ pharmacies, stats, recentOrders, top
                             #{order.id}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {order.client}
+                            <div className="font-medium text-gray-900">{order.client_name}</div>
+                            <div className="text-xs text-gray-500">{order.client_email}</div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {formatCurrency(order.total)}
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
+                            {order.total_formatted}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <StatusBadge status={order.status} />
+                            <StatusBadge 
+                              status={order.status_value} 
+                              label={order.status_label} 
+                              color={order.status_color}
+                            />
                           </td>
                         </tr>
                       ))}

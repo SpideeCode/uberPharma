@@ -81,6 +81,9 @@ Route::middleware(['auth', ClientPass::class])->group(function () {
     // Historique des commandes (ClientOrders.tsx)
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
 
+    // Gestion des commandes (PharmacyOrders.tsx)
+    Route::get('/pharmacy/orders', [OrderController::class, 'index'])->name('pharmacy.orders');
+
     // Détail d'une commande (OrderDetail.tsx)
     Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
 
@@ -121,6 +124,8 @@ Route::middleware(['auth', ClientPass::class])->group(function () {
 // Routes pharmacies
 // -----------------------------------------------------------------------------
 Route::middleware(['auth', PharmacyPass::class])->group(function () {
+    // Tableau de bord pharmacie
+    Route::get('/pharmacy/dashboard', [PharmacyDashboardController::class, 'index'])->name('pharmacy.dashboard');
     // Gestion des pharmacies
     Route::get('/pharmacies', [PharmacyController::class, 'index'])->name('pharmacies.index');
     Route::get('/pharmacies/create', [PharmacyController::class, 'create'])->name('pharmacies.create');
@@ -137,6 +142,10 @@ Route::middleware(['auth', PharmacyPass::class])->group(function () {
     Route::get('/products/{product}/edit', [ProductController::class, 'edit'])->name('products.edit');
     Route::put('/products/{product}', [ProductController::class, 'update'])->name('products.update');
     Route::delete('/products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
+    
+    // Mise à jour du statut d'une commande
+    Route::patch('/api/orders/{order}/status', [OrderController::class, 'updateStatus'])
+        ->name('api.orders.updateStatus');
 });
 
 // -----------------------------------------------------------------------------

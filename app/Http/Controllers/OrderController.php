@@ -67,19 +67,64 @@ class OrderController extends Controller
     {
         $user = Auth::user();
 
-        // Vérification d'accès
-        if ($user->role === 'client' && $order->user_id !== $user->id) {
-            abort(403);
-        }
-
-        if ($user->role === 'pharmacy' && !$user->pharmacies->contains($order->pharmacy_id)) {
-            abort(403);
-        }
-
-        $order->load('items.product', 'client', 'pharmacy');
+        $order->load('items.product', 'pharmacy', 'client');
 
         return Inertia::render('OrderDetail', [
             'order' => $order,
+        ]);
+    }
+
+    /**
+     * Met à jour le statut d'une commande
+     */
+    public function updateStatus(Order $order, Request $request)
+    {
+        $user = auth()->user();
+        
+        // Vérifier que l'utilisateur a le droit de modifier cette commande
+        if ($user->role === 'pharmacy') {
+            // Vérifier que la commande appartient à une des pharmacies de l'utilisateur
+            if (!$user->pharmacies->contains($order->pharmacy_id)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Non autorisé à modifier cette commande',
+                ], 403);
+            }
+        } elseif ($user->role !== 'admin') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Accès non autorisé',
+            ], 403);
+        }
+
+        $validated = $request->validate([
+            'status' => 'required|in:pending,accepted,in_delivery,delivered,cancelled',
+        ]);
+
+        // Vérifier les transitions de statut autorisées
+        $allowedTransitions = [
+            'pending' => ['accepted', 'cancelled'],
+            'accepted' => ['in_delivery', 'cancelled'],
+            'in_delivery' => ['delivered'],
+        ];
+
+        if (isset($allowedTransitions[$order->status]) && 
+            !in_array($validated['status'], $allowedTransitions[$order->status])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Transition de statut non autorisée',
+            ], 422);
+        }
+
+        $order->update(['status' => $validated['status']]);
+
+        // Vous pourriez ajouter ici une notification au client
+        // Exemple: event(new OrderStatusUpdated($order));
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Statut de la commande mis à jour avec succès',
+            'order' => $order->fresh(['items.product', 'client'])
         ]);
     }
 }

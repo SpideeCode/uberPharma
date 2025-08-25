@@ -37,6 +37,21 @@ class OrderPolicy
      */
     public function update(User $user, Order $order): bool
     {
+        // Un administrateur peut tout faire
+        if ($user->role === 'admin') {
+            return true;
+        }
+
+        // Un pharmacien peut mettre à jour les commandes de ses pharmacies
+        if ($user->role === 'pharmacy') {
+            return $user->pharmacies->contains($order->pharmacy_id);
+        }
+
+        // Un client peut annuler ses propres commandes si elles sont en attente
+        if ($user->role === 'client' && $order->status === 'pending') {
+            return $user->id === $order->user_id;
+        }
+
         return false;
     }
 
